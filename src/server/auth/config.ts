@@ -41,7 +41,8 @@ export const authConfig = {
           access_type: "offline",
           response_type: "code"
         }
-      }
+      },
+      allowDangerousEmailAccountLinking: true
     }),
     CredentialsProvider({
       name: "credentials",

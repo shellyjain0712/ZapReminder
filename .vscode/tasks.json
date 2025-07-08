@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Prisma Generate and Push",
+			"type": "shell",
+			"command": "npx prisma generate && npx prisma db push",
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": false
+		}
+	]
+}
