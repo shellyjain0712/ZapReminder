@@ -48,6 +48,7 @@ https://your-vercel-app.vercel.app/api/auth/callback/google
 Make sure your `.env` file has:
 ```bash
 # Google OAuth (from Google Cloud Console)
+<<<<<<< HEAD
 GOOGLE_CLIENT_ID="your_google_client_id_here"
 GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
 
@@ -56,6 +57,16 @@ DATABASE_URL="your_postgresql_connection_string_here"
 
 # NextAuth
 AUTH_SECRET="your_auth_secret_here"
+=======
+GOOGLE_CLIENT_ID="your-google-client-id-here"
+GOOGLE_CLIENT_SECRET="your-google-client-secret-here"
+
+# Neon Database
+DATABASE_URL="postgresql://<user>:<password>@<your-neon-host>.neon.tech/neondb?sslmode=require"
+
+# NextAuth
+AUTH_SECRET="your-random-long-secret"
+>>>>>>> 44f4752598648a0f3f3adb0f262a5b5c5d1ad734
 ```
 
 ## Testing Steps
