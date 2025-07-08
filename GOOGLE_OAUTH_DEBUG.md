@@ -1,6 +1,13 @@
-# Google OAuth Setup & Troubleshooting Guide
+# Google OAuth Setup & Troubleshooting GMake sure your `.env` file has:
+```bash
+# Google OAuth (from Google Cloud Console)
+GOOGLE_CLIENT_ID="your_google_client_id_here"
+GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
 
-## Current Issue: Google OAuth Not Working
+# PostgreSQL Database
+DATABASE_URL="your_postgresql_connection_string_here"
+
+# NextAuth Current Issue: Google OAuth Not Working
 
 The app has been updated with:
 - ✅ PrismaAdapter for saving users to Neon database
@@ -41,14 +48,14 @@ https://your-vercel-app.vercel.app/api/auth/callback/google
 Make sure your `.env` file has:
 ```bash
 # Google OAuth (from Google Cloud Console)
-GOOGLE_CLIENT_ID="420841585528-iihjli7mh8e2k150esl2hhm1606e7ge7.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="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vMoYcAICU"
+GOOGLE_CLIENT_ID="your_google_client_id_here"
+GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
 
-# Neon Database
-DATABASE_URL="postgresql://neondb_owner:npg_PXZVjw6pOqJZ5O8jDYGYf9oL2a3Y8lLZ@ep-shy-unit-a1aff7rb-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+# PostgreSQL Database
+DATABASE_URL="your_postgresql_connection_string_here"
 
 # NextAuth
-AUTH_SECRET="vXpHIyl8RpDRofC0YAk2PMgp8teWJoQTHrvMoYcAICU="
+AUTH_SECRET="your_auth_secret_here"
 ```
 
 ## Testing Steps
