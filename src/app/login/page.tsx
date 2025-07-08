@@ -57,14 +57,13 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const res = await signIn('google', { 
-        callbackUrl: '/dashboard',
-        redirect: false 
+      // For Google OAuth, let NextAuth handle the redirect automatically
+      await signIn('google', { 
+        callbackUrl: '/dashboard?welcome=true',
       });
       
-      if (res?.error) {
-        toast.error("Google sign-in failed. Please try again.");
-      }
+      // This will trigger the automatic redirect to Google OAuth
+      // The redirect callback in auth config will handle the return redirect
     } catch (err) {
       console.error("Google sign-in error:", err);
       toast.error("Google sign-in failed. Please try again.");

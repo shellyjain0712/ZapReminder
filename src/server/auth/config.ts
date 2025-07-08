@@ -108,6 +108,12 @@ export const authConfig = {
         account: account ? { provider: account.provider, type: account.type } : null,
         profile: profile ? { email: profile.email, name: profile.name } : null
       });
+      
+      // For Google OAuth, ensure redirect happens
+      if (account?.provider === 'google') {
+        console.log('Google OAuth sign-in successful, will redirect to dashboard');
+      }
+      
       return true;
     },
     jwt: ({ token, user, account }) => {
@@ -137,6 +143,18 @@ export const authConfig = {
     async redirect({ url, baseUrl }) {
       console.log('Redirect called with:', { url, baseUrl });
       
+      // Handle Google OAuth callback specifically
+      if (url.includes('/api/auth/callback/google')) {
+        console.log('Google OAuth callback, redirecting to dashboard');
+        return baseUrl + '/dashboard?welcome=true';
+      }
+      
+      // Handle general auth callbacks
+      if (url.includes('/api/auth/')) {
+        console.log('Auth callback, redirecting to dashboard');
+        return baseUrl + '/dashboard?welcome=true';
+      }
+      
       // If redirecting to dashboard, keep it as is
       if (url.includes('/dashboard')) {
         console.log('Redirecting to dashboard:', url);
@@ -149,17 +167,17 @@ export const authConfig = {
         return baseUrl + '/dashboard?welcome=true';
       }
       
-      // For any other auth-related redirects, go to dashboard
-      if (url.includes('/api/auth/')) {
-        console.log('Auth callback, redirecting to dashboard');
-        return baseUrl + '/dashboard?welcome=true';
+      // Allow relative callback URLs to dashboard
+      if (url.startsWith('/')) {
+        console.log('Relative URL, redirecting to dashboard');
+        return `${baseUrl}/dashboard?welcome=true`;
       }
       
-      // Allow relative callback URLs
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
-      
       // Allow callback URLs on the same origin
-      if (new URL(url).origin === baseUrl) return url;
+      if (new URL(url).origin === baseUrl) {
+        console.log('Same origin URL, redirecting to dashboard');
+        return baseUrl + '/dashboard?welcome=true';
+      }
       
       // Default to dashboard
       console.log('Default redirect to dashboard');
