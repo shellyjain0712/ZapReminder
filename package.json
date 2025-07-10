@@ -10,6 +10,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:reset": "prisma generate && prisma db push",
+    "db:fix": "prisma generate --force-reset && prisma db push",
     "dev": "next dev --turbo",
     "dev:all": "concurrently \"pnpm dev\" \"pnpm prisma studio\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
@@ -20,7 +22,10 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "postbuild": "prisma migrate deploy"
+    "postbuild": "prisma migrate deploy",
+    "fix:auth": "node fix-auth-complete.js",
+    "fix:prisma": "powershell -ExecutionPolicy Bypass -File fix-prisma-permission.ps1",
+    "validate:env": "node validate-env.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",

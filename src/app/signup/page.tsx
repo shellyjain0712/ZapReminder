@@ -80,19 +80,45 @@ export default function SignUp() {
       if (res.ok) {
         toast.success("Account created successfully! Signing you in...");
         
-        // Auto-login after successful registration
-        const loginRes = await signIn('credentials', {
-          email: form.email,
-          password: form.password,
-          redirect: false,
-        });
+        // Wait a moment for the account to be properly created
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        if (loginRes?.ok) {
-          // Force a page reload to ensure session is properly set
-          window.location.href = '/dashboard?welcome=true';
-        } else {
-          toast.error("Account created but login failed. Please try logging in manually.");
-          router.push('/login');
+        try {
+          // Auto-login after successful registration
+          const loginRes = await signIn('credentials', {
+            email: form.email,
+            password: form.password,
+            redirect: false,
+          });
+          
+          console.log("Login attempt result:", loginRes);
+          
+          if (loginRes?.ok && !loginRes?.error) {
+            toast.success("Login successful! Redirecting to dashboard...");
+            // Additional wait for session to be established
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Use router push instead of window.location for better handling
+            router.push('/dashboard?welcome=true');
+            
+            // Fallback redirect after a moment
+            setTimeout(() => {
+              if (window.location.pathname !== '/dashboard') {
+                window.location.href = '/dashboard?welcome=true';
+              }
+            }, 2000);
+          } else {
+            console.error("Login failed after signup:", loginRes?.error);
+            toast.error(`Account created but auto-login failed: ${loginRes?.error ?? 'Unknown error'}. Please log in manually.`);
+            
+            // Clear the form and redirect to login
+            setForm({ name: '', email: '', password: '', confirmPassword: '', agreed: false });
+            setTimeout(() => router.push('/login'), 2000);
+          }
+        } catch (loginError) {
+          console.error("Login error after signup:", loginError);
+          toast.error("Account created but auto-login failed. Please log in manually.");
+          setTimeout(() => router.push('/login'), 2000);
         }
       } else {
         toast.error(data.error ?? "Something went wrong during registration");

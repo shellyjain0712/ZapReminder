@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { z } from "zod";
@@ -42,8 +38,8 @@ export async function POST(request: Request) {
 
     console.log("User data to create:", { name, email, hasPassword: !!password });
 
-    // Use a more flexible approach for user creation
-    const user = await (db.user as any).create({
+    // Create user with explicit type casting for compatibility
+    const user = await db.user.create({
       data: {
         name,
         email,

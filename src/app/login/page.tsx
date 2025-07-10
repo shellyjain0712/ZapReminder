@@ -41,11 +41,25 @@ export default function Login() {
       console.log('SignIn result:', res);
 
       if (res?.error) {
-        toast.error("Invalid email or password");
+        console.error('Login error:', res.error);
+        toast.error(`Login failed: ${res.error}`);
       } else if (res?.ok) {
-        toast.success("Login successful!");
-        // Force a page reload to ensure session is properly set
-        window.location.href = '/dashboard?welcome=true';
+        toast.success("Login successful! Redirecting...");
+        
+        // Wait for session to be established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Use router push first, then fallback to window.location
+        router.push('/dashboard?welcome=true');
+        
+        // Fallback redirect
+        setTimeout(() => {
+          if (window.location.pathname !== '/dashboard') {
+            window.location.href = '/dashboard?welcome=true';
+          }
+        }, 1500);
+      } else {
+        toast.error("Login failed - unknown error");
       }
     } catch (err) {
       console.error("Login error:", err);
