@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
@@ -18,21 +15,7 @@ const createReminderSchema = z.object({
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
 });
 
-const updateReminderSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
-  dueDate: z.string().transform((str) => new Date(str)).optional(),
-  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-  category: z.string().optional(),
-  isCompleted: z.boolean().optional(),
-  emailNotification: z.boolean().optional(),
-  pushNotification: z.boolean().optional(),
-  reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
-  isSnooze: z.boolean().optional(),
-  snoozeUntil: z.string().transform((str) => str ? new Date(str) : null).optional(),
-});
-
-// GET - Fetch all reminders for the user
+// GET - Fetch all reminders for the authenticated user
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -109,6 +92,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = await request.json();
     const validatedData = createReminderSchema.parse(body);
 

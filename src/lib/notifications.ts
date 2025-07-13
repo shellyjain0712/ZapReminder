@@ -22,7 +22,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">📋 Reminder Alert</h2>
-          <p>Hi ${userName || 'there'},</p>
+          <p>Hi ${userName ?? 'there'},</p>
           <p>This is a friendly reminder about your upcoming task:</p>
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin: 0; color: #495057;">${reminderTitle}</h3>
@@ -35,7 +35,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       textContent = `
         Reminder Alert
         
-        Hi ${userName || 'there'},
+        Hi ${userName ?? 'there'},
         
         This is a friendly reminder about your upcoming task:
         
@@ -51,7 +51,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #28a745;">🎉 Task Completed!</h2>
-          <p>Hi ${userName || 'there'},</p>
+          <p>Hi ${userName ?? 'there'},</p>
           <p>Congratulations! You've successfully completed your task:</p>
           <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
             <h3 style="margin: 0; color: #155724;">${reminderTitle}</h3>
@@ -63,7 +63,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       textContent = `
         Task Completed!
         
-        Hi ${userName || 'there'},
+        Hi ${userName ?? 'there'},
         
         Congratulations! You've successfully completed your task:
         
@@ -79,7 +79,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #ffc107;">😴 Task Snoozed</h2>
-          <p>Hi ${userName || 'there'},</p>
+          <p>Hi ${userName ?? 'there'},</p>
           <p>You've snoozed the following task:</p>
           <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
             <h3 style="margin: 0; color: #856404;">${reminderTitle}</h3>
@@ -91,7 +91,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       textContent = `
         Task Snoozed
         
-        Hi ${userName || 'there'},
+        Hi ${userName ?? 'there'},
         
         You've snoozed the following task:
         
@@ -107,7 +107,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #dc3545;">🗑️ Task Deleted</h2>
-          <p>Hi ${userName || 'there'},</p>
+          <p>Hi ${userName ?? 'there'},</p>
           <p>The following task has been deleted:</p>
           <div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
             <h3 style="margin: 0; color: #721c24; text-decoration: line-through;">${reminderTitle}</h3>
@@ -119,7 +119,7 @@ export async function sendReminderNotification(options: NotificationOptions) {
       textContent = `
         Task Deleted
         
-        Hi ${userName || 'there'},
+        Hi ${userName ?? 'there'},
         
         The following task has been deleted:
         

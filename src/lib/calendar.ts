@@ -11,7 +11,7 @@ export interface CalendarEventData {
 export function generateGoogleCalendarUrl(event: CalendarEventData): string {
   const { title, description, dueDate, reminderTime } = event;
   
-  const startDate = reminderTime || dueDate;
+  const startDate = reminderTime ?? dueDate;
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
   
   const formatDate = (date: Date) => {
@@ -22,7 +22,7 @@ export function generateGoogleCalendarUrl(event: CalendarEventData): string {
     action: 'TEMPLATE',
     text: title,
     dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
-    details: description || `Reminder: ${title}`,
+    details: description ?? `Reminder: ${title}`,
     location: '',
   });
 
@@ -32,14 +32,14 @@ export function generateGoogleCalendarUrl(event: CalendarEventData): string {
 export function generateOutlookCalendarUrl(event: CalendarEventData): string {
   const { title, description, dueDate, reminderTime } = event;
   
-  const startDate = reminderTime || dueDate;
+  const startDate = reminderTime ?? dueDate;
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
 
   const params = new URLSearchParams({
     subject: title,
     startdt: startDate.toISOString(),
     enddt: endDate.toISOString(),
-    body: description || `Reminder: ${title}`,
+    body: description ?? `Reminder: ${title}`,
     location: '',
   });
 
@@ -49,7 +49,7 @@ export function generateOutlookCalendarUrl(event: CalendarEventData): string {
 export function generateCalendarEvent(event: CalendarEventData): { icalContent: string; filename: string } {
   const { title, description, dueDate, reminderTime } = event;
   
-  const startDate = reminderTime || dueDate;
+  const startDate = reminderTime ?? dueDate;
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
 
   const formatICalDate = (date: Date) => {
@@ -71,7 +71,7 @@ export function generateCalendarEvent(event: CalendarEventData): { icalContent: 
     `DTSTART:${formatICalDate(startDate)}Z`,
     `DTEND:${formatICalDate(endDate)}Z`,
     `SUMMARY:${title}`,
-    `DESCRIPTION:${description || `Reminder: ${title}`}`,
+    `DESCRIPTION:${description ?? `Reminder: ${title}`}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'BEGIN:VALARM',
