@@ -1,6 +1,6 @@
 'use client'
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -12,8 +12,17 @@ import { toast } from "sonner";
 export default function Login() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+
+  // Show success message from signup
+  useEffect(() => {
+    const message = searchParams.get('message');
+    if (message) {
+      toast.success(message);
+    }
+  }, [searchParams]);
 
   // Redirect if already authenticated
   useEffect(() => {
