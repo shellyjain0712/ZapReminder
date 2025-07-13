@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Reminders } from '@/components/Reminders';
 import { toast } from 'sonner';
 
 function DashboardContent() {
@@ -122,63 +123,8 @@ function DashboardContent() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Tasks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Manage your daily tasks and reminders
-                </p>
-                <Button size="sm" className="w-full">
-                  View Tasks
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Calendar</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-2">
-                  View your schedule and upcoming events
-                </p>
-                <Button size="sm" className="w-full" variant="outline">
-                  Open Calendar
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Customize your account preferences
-                </p>
-                <Button size="sm" className="w-full" variant="outline">
-                  Settings
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No recent activity to display.</p>
-                <p className="text-sm">Start by creating your first task!</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Reminders Section */}
+          <Reminders />
         </div>
       </main>
     </div>

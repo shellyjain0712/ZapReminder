@@ -1,0 +1,512 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { CalendarIcon, Plus } from 'lucide-react';
+import { formatDate } from '@/lib/date-utils';
+import { toast } from 'sonner';
+import { ReminderCard } from './ReminderCard';
+import { generateGoogleCalendarUrl } from '@/lib/calendar';
+
+interface Reminder {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate: Date;
+  isCompleted: boolean;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  category?: string;
+  emailNotification: boolean;
+  pushNotification: boolean;
+  reminderTime?: Date;
+  isSnooze: boolean;
+  snoozeUntil?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface RemindersProps {
+  initialReminders?: Reminder[];
+}
+
+export function Reminders({ initialReminders = [] }: RemindersProps) {
+  const { data: session } = useSession();
+  const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
+
+  // Fetch reminders - memoized to prevent unnecessary re-renders
+  const fetchReminders = useCallback(async () => {
+    if (!session) return [];
+    
+    setLoading(true);
+    try {
+      const response = await fetch('/api/reminders');
+      if (response.ok) {
+        const data = await response.json();
+        const processedReminders = data.map((r: {
+          id: string;
+          title: string;
+          description?: string;
+          dueDate: string;
+          priority: string;
+          category?: string;
+          completed: boolean;
+          emailNotification?: boolean;
+          pushNotification?: boolean;
+          reminderTime?: string;
+          snoozeUntil?: string;
+          userId: string;
+          createdAt: string;
+          updatedAt: string;
+        }) => ({
+          ...r,
+          dueDate: new Date(r.dueDate),
+          reminderTime: r.reminderTime ? new Date(r.reminderTime) : undefined,
+          snoozeUntil: r.snoozeUntil ? new Date(r.snoozeUntil) : undefined,
+          createdAt: new Date(r.createdAt),
+          updatedAt: new Date(r.updatedAt),
+        }));
+        setReminders(processedReminders);
+        return processedReminders;
+      }
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+      toast.error('Failed to fetch reminders');
+    } finally {
+      setLoading(false);
+    }
+    return [];
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) return;
+    
+    // Fetch reminders on mount
+    void fetchReminders();
+  }, [session, fetchReminders]);
+
+  const filteredReminders = reminders.filter(reminder => {
+    if (filter === 'completed') return reminder.isCompleted;
+    if (filter === 'pending') return !reminder.isCompleted;
+    return true;
+  });
+
+  const toggleComplete = async (id: string, completed: boolean) => {
+    try {
+      const response = await fetch(`/api/reminders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCompleted: completed }),
+      });
+
+      if (response.ok) {
+        await fetchReminders();
+        toast.success(completed ? 'Task completed!' : 'Task marked as pending');
+      } else {
+        toast.error('Failed to update task');
+      }
+    } catch (error) {
+      console.error('Error updating reminder:', error);
+      toast.error('Failed to update task');
+    }
+  };
+
+  const deleteReminder = async (id: string) => {
+    try {
+      const response = await fetch(`/api/reminders/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchReminders();
+        toast.success('Task deleted successfully');
+      } else {
+        toast.error('Failed to delete task');
+      }
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
+      toast.error('Failed to delete task');
+    }
+  };
+
+  const snoozeReminder = async (id: string, snoozeUntil: Date) => {
+    try {
+      const response = await fetch(`/api/reminders/${id}/snooze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ snoozeUntil: snoozeUntil.toISOString() }),
+      });
+
+      if (response.ok) {
+        await fetchReminders();
+        toast.success('Task snoozed successfully');
+      } else {
+        toast.error('Failed to snooze task');
+      }
+    } catch (error) {
+      console.error('Error snoozing reminder:', error);
+      toast.error('Failed to snooze task');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">My Reminders</h2>
+          <p className="text-muted-foreground">
+            Manage your tasks and stay organized
+          </p>
+        </div>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Reminder
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Reminder</DialogTitle>
+            </DialogHeader>
+            <ReminderForm
+              onSubmit={async (data) => {
+                try {
+                  const response = await fetch('/api/reminders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                  });
+
+                  if (response.ok) {
+                    await response.json();
+                    await fetchReminders();
+                    setShowAddDialog(false);
+                    
+                    // Automatically add to Google Calendar
+                    try {
+                      const calendarUrl = generateGoogleCalendarUrl({
+                        title: data.title,
+                        description: data.description,
+                        dueDate: new Date(data.dueDate),
+                        reminderTime: data.reminderTime ? new Date(data.reminderTime) : undefined,
+                      });
+                      
+                      // Open calendar in new tab
+                      window.open(calendarUrl, '_blank');
+                      
+                      toast.success('Reminder created and added to calendar! 📅', {
+                        description: 'Check your Google Calendar for the new event'
+                      });
+                    } catch (calendarError) {
+                      console.error('Error adding to calendar:', calendarError);
+                      toast.success('Reminder created successfully');
+                      toast.info('Could not auto-add to calendar. You can manually add it from the reminder card.');
+                    }
+                  } else {
+                    toast.error('Failed to create reminder');
+                  }
+                } catch (error) {
+                  console.error('Error creating reminder:', error);
+                  toast.error('Failed to create reminder');
+                }
+              }}
+              onCancel={() => setShowAddDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-2">
+        <Button
+          variant={filter === 'all' ? 'default' : 'outline'}
+          onClick={() => setFilter('all')}
+        >
+          All ({reminders.length})
+        </Button>
+        <Button
+          variant={filter === 'pending' ? 'default' : 'outline'}
+          onClick={() => setFilter('pending')}
+        >
+          Pending ({reminders.filter(r => !r.isCompleted).length})
+        </Button>
+        <Button
+          variant={filter === 'completed' ? 'default' : 'outline'}
+          onClick={() => setFilter('completed')}
+        >
+          Completed ({reminders.filter(r => r.isCompleted).length})
+        </Button>
+      </div>
+
+      {/* Reminders List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : filteredReminders.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>No reminders found.</p>
+          <p className="text-sm">Create your first reminder to get started!</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {filteredReminders.map(reminder => (
+            <ReminderCard
+              key={reminder.id}
+              reminder={reminder}
+              onToggleComplete={toggleComplete}
+              onEdit={setEditingReminder}
+              onDelete={deleteReminder}
+              onSnooze={snoozeReminder}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Edit Dialog */}
+      {editingReminder && (
+        <Dialog open={!!editingReminder} onOpenChange={() => setEditingReminder(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Reminder</DialogTitle>
+            </DialogHeader>
+            <ReminderForm
+              reminder={editingReminder}
+              onSubmit={async (data) => {
+                try {
+                  const response = await fetch(`/api/reminders/${editingReminder.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                  });
+
+                  if (response.ok) {
+                    await fetchReminders();
+                    setEditingReminder(null);
+                    toast.success('Reminder updated successfully');
+                  } else {
+                    toast.error('Failed to update reminder');
+                  }
+                } catch (error) {
+                  console.error('Error updating reminder:', error);
+                  toast.error('Failed to update reminder');
+                }
+              }}
+              onCancel={() => setEditingReminder(null)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+interface ReminderFormProps {
+  reminder?: Reminder;
+  onSubmit: (data: {
+    title: string;
+    description?: string;
+    dueDate: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    category?: string;
+    emailNotification: boolean;
+    pushNotification: boolean;
+    reminderTime?: string;
+  }) => void;
+  onCancel: () => void;
+}
+
+function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
+  const [title, setTitle] = useState(reminder?.title ?? '');
+  const [description, setDescription] = useState(reminder?.description ?? '');
+  const [dueDate, setDueDate] = useState<Date>(reminder?.dueDate ?? new Date());
+  const [priority, setPriority] = useState(reminder?.priority ?? 'MEDIUM');
+  const [category, setCategory] = useState(reminder?.category ?? '');
+  const [emailNotification, setEmailNotification] = useState(reminder?.emailNotification ?? true);
+  const [pushNotification, setPushNotification] = useState(reminder?.pushNotification ?? true);
+  const [hasSpecificTime, setHasSpecificTime] = useState(!!reminder?.reminderTime);
+  const [timeString, setTimeString] = useState(() => {
+    if (reminder?.reminderTime) {
+      const time = new Date(reminder.reminderTime);
+      return time.toTimeString().slice(0, 5); // HH:MM format
+    }
+    return '09:00'; // Default time
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+
+    // Combine date and time if specific time is set
+    let finalReminderTime: Date | undefined = undefined;
+    if (hasSpecificTime && timeString) {
+      const timeParts = timeString.split(':');
+      if (timeParts.length === 2 && timeParts[0] && timeParts[1]) {
+        const hours = parseInt(timeParts[0], 10);
+        const minutes = parseInt(timeParts[1], 10);
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          finalReminderTime = new Date(dueDate);
+          finalReminderTime.setHours(hours, minutes, 0, 0);
+        }
+      }
+    }
+
+    onSubmit({
+      title: title.trim(),
+      description: description.trim() || undefined,
+      dueDate: dueDate.toISOString(),
+      priority,
+      category: category.trim() || undefined,
+      emailNotification,
+      pushNotification,
+      reminderTime: finalReminderTime?.toISOString(),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Title *</Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter reminder title"
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Add description (optional)"
+        />
+      </div>
+
+      <div>
+        <Label>Due Date *</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-full justify-start text-left font-normal">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {formatDate(dueDate)}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dueDate}
+              onSelect={(date) => date && setDueDate(date)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="specific-time">Set Specific Time</Label>
+          <Switch
+            id="specific-time"
+            checked={hasSpecificTime}
+            onCheckedChange={setHasSpecificTime}
+          />
+        </div>
+        {hasSpecificTime && (
+          <div>
+            <Label htmlFor="reminder-time">Reminder Time</Label>
+            <Input
+              id="reminder-time"
+              type="time"
+              value={timeString}
+              onChange={(e) => setTimeString(e.target.value)}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Set the specific time for this reminder
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label>Priority</Label>
+        <Select value={priority} onValueChange={(value) => setPriority(value as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT')}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="LOW">Low</SelectItem>
+            <SelectItem value="MEDIUM">Medium</SelectItem>
+            <SelectItem value="HIGH">High</SelectItem>
+            <SelectItem value="URGENT">Urgent</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="category">Category</Label>
+        <Input
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="e.g., Work, Personal, Health"
+        />
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="email-notification">Email Notifications</Label>
+          <Switch
+            id="email-notification"
+            checked={emailNotification}
+            onCheckedChange={setEmailNotification}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="push-notification">Push Notifications</Label>
+          <Switch
+            id="push-notification"
+            checked={pushNotification}
+            onCheckedChange={setPushNotification}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button type="submit" className="flex-1">
+          {reminder ? 'Update' : 'Create'} Reminder
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
