@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     interface WhereClause {
       userId: string;
       isCompleted?: boolean;
-      priority?: string;
+      priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
       category?: string;
     }
 
@@ -66,8 +66,8 @@ export async function GET(request: Request) {
       whereClause.isCompleted = completed === "true";
     }
     
-    if (priority) {
-      whereClause.priority = priority;
+    if (priority && ["LOW", "MEDIUM", "HIGH", "URGENT"].includes(priority)) {
+      whereClause.priority = priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT";
     }
     
     if (category) {

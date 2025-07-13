@@ -13,9 +13,10 @@ const snoozeSchema = z.object({
 // POST - Snooze a specific reminder
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const session = await auth();
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,7 +32,7 @@ export async function POST(
 
     const existingReminder = await db.reminder.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.id,
       },
     });
@@ -44,7 +45,7 @@ export async function POST(
     const { snoozeUntil } = snoozeSchema.parse(body);
 
     const updatedReminder = await db.reminder.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         isSnooze: true,
         snoozeUntil,

@@ -23,9 +23,10 @@ const updateReminderSchema = z.object({
 // GET - Fetch a specific reminder
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,7 +42,7 @@ export async function GET(
 
     const reminder = await db.reminder.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: user.id,
       },
     });
@@ -63,9 +64,10 @@ export async function GET(
 // PUT - Update a specific reminder
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const session = await auth();
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -81,7 +83,7 @@ export async function PUT(
 
     const existingReminder = await db.reminder.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.id,
       },
     });
@@ -94,7 +96,7 @@ export async function PUT(
     const validatedData = updateReminderSchema.parse(body);
 
     const updatedReminder = await db.reminder.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
     });
 
@@ -125,9 +127,10 @@ export async function PUT(
 // DELETE - Delete a specific reminder
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const session = await auth();
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -143,7 +146,7 @@ export async function DELETE(
 
     const existingReminder = await db.reminder.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.id,
       },
     });
@@ -153,7 +156,7 @@ export async function DELETE(
     }
 
     await db.reminder.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     // TODO: Send deletion notification

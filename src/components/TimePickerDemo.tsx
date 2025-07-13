@@ -8,10 +8,15 @@ export function TimePickerDemo() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleCreateReminder = () => {
+    if (!selectedDate) return;
+    
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const dueDate = new Date(selectedDate);
     const reminderTime = new Date(selectedDate);
-    reminderTime.setHours(hours, minutes, 0, 0);
+    
+    if (hours !== undefined && minutes !== undefined) {
+      reminderTime.setHours(hours, minutes, 0, 0);
+    }
 
     toast.success(`Reminder set for ${dueDate.toDateString()} at ${reminderTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`, {
       description: 'Your reminder has been created with the specific time!'
@@ -47,7 +52,7 @@ export function TimePickerDemo() {
         <div className="text-sm text-muted-foreground text-center">
           Reminder will be set for:<br />
           <strong>
-            {new Date(selectedDate).toDateString()} at {' '}
+            {selectedDate ? new Date(selectedDate).toDateString() : 'No date selected'} at {' '}
             {new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
           </strong>
         </div>

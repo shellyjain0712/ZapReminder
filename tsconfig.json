@@ -38,5 +38,11 @@
     "**/*.js",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "test-*.js",
+    "validate-env.js",
+    "*.test.js",
+    "*.spec.js"
+  ]
 }
