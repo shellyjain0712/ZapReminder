@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
@@ -63,7 +62,7 @@ export default function SecuritySettingsPage() {
         newPassword: '',
         confirmPassword: ''
       });
-    } catch (error) {
+    } catch {
       toast.error('Failed to update password');
     } finally {
       setIsLoading(false);
@@ -77,7 +76,7 @@ export default function SecuritySettingsPage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setTwoFAEnabled(enabled);
       toast.success(enabled ? '2FA enabled successfully' : '2FA disabled successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update 2FA settings');
     } finally {
       setIsLoading(false);
@@ -191,7 +190,7 @@ export default function SecuritySettingsPage() {
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                You're signed in with Google. To change your password, please visit your Google account settings.
+                You&apos;re signed in with Google. To change your password, please visit your Google account settings.
               </AlertDescription>
             </Alert>
           )}
@@ -278,7 +277,7 @@ export default function SecuritySettingsPage() {
             <div className="p-4 border rounded-lg space-y-2">
               <p className="font-medium text-sm">2FA is enabled</p>
               <p className="text-sm text-muted-foreground">
-                You're protected by two-factor authentication using an authenticator app.
+                You&apos;re protected by two-factor authentication using an authenticator app.
               </p>
               <Button variant="outline" size="sm">
                 View Recovery Codes

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
@@ -21,7 +20,6 @@ import {
   Cookie, 
   BarChart3,
   MapPin,
-  Calendar,
   Clock,
   Info,
   AlertTriangle,
@@ -69,7 +67,7 @@ export default function PrivacySettingsPage() {
     }
   }, [session, status, router]);
 
-  const updatePrivacySetting = async (key: string, value: any) => {
+  const updatePrivacySetting = async (key: string, value: string | boolean) => {
     setIsLoading(true);
     try {
       setPrivacy(prev => ({
@@ -80,7 +78,7 @@ export default function PrivacySettingsPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       toast.success('Privacy settings updated');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update privacy settings');
     } finally {
       setIsLoading(false);
@@ -226,7 +224,7 @@ export default function PrivacySettingsPage() {
               <div>
                 <Label className="font-medium">Show Activity Status</Label>
                 <p className="text-sm text-muted-foreground">
-                  Let others see when you're active
+                  Let others see when you&apos;re active
                 </p>
               </div>
               <Switch
@@ -261,7 +259,7 @@ export default function PrivacySettingsPage() {
             Data Sharing & Analytics
           </CardTitle>
           <CardDescription>
-            Choose what data you're comfortable sharing to improve our service
+            Choose what data you&apos;re comfortable sharing to improve our service
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

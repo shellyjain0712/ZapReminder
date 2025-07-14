@@ -14,6 +14,15 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { User, Mail, Calendar, Shield, Camera } from 'lucide-react';
 
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  createdAt: string;
+  emailVerified: Date | null;
+}
+
 export default function ProfileSettingsPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
@@ -52,21 +61,40 @@ export default function ProfileSettingsPage() {
   };
 
   const handleSave = async () => {
+    if (!formData.name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Here you would typically make an API call to update the user profile
-      // For now, we'll just simulate a successful update
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update the session if needed
-      if (formData.name !== session?.user?.name) {
-        await update({ name: formData.name });
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error ?? 'Failed to update profile');
       }
+
+      const updatedProfile = await response.json() as UserProfile;
+      
+      // Update the session with new name
+      await update({
+        name: updatedProfile.name,
+      });
       
       toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setIsLoading(false);
     }

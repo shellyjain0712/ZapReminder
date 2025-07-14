@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
   User, 
   Shield, 
@@ -103,8 +102,7 @@ export default function SettingsPage() {
         throw new Error('Failed to fetch reminders');
       }
       
-      const data = await response.json() as { reminders: Reminder[] };
-      const reminders: Reminder[] = data.reminders ?? [];
+      const reminders = await response.json() as Reminder[];
       
       const now = new Date();
       const total = reminders.length;

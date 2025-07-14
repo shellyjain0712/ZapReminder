@@ -18,7 +18,6 @@ import {
   Monitor, 
   Sun, 
   Moon, 
-  Smartphone,
   Type,
   Layout,
   Eye,
@@ -57,7 +56,7 @@ export default function AppearanceSettingsPage() {
     }
   }, [session, status, router]);
 
-  const updatePreference = async (key: string, value: any) => {
+  const updatePreference = async (key: string, value: string | number | boolean) => {
     try {
       setPreferences(prev => ({
         ...prev,
@@ -72,7 +71,7 @@ export default function AppearanceSettingsPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 300));
       toast.success('Appearance updated');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update appearance');
     }
   };
@@ -143,7 +142,7 @@ export default function AppearanceSettingsPage() {
             Current Theme
           </CardTitle>
           <CardDescription>
-            You're currently using the <Badge variant="secondary">{resolvedTheme}</Badge> theme
+            You&apos;re currently using the <Badge variant="secondary">{resolvedTheme}</Badge> theme
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -213,7 +212,7 @@ export default function AppearanceSettingsPage() {
             <Label>Font Size: {preferences.fontSize}px</Label>
             <Slider
               value={[preferences.fontSize]}
-              onValueChange={(value) => updatePreference('fontSize', value[0])}
+              onValueChange={(value) => updatePreference('fontSize', value[0] ?? 14)}
               min={12}
               max={20}
               step={1}

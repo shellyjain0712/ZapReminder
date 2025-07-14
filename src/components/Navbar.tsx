@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -21,15 +21,13 @@ import {
   LogOut,
   Shield,
   Bell,
-  Palette,
-  Mail
+  Palette
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
 
   const handleSignOut = async () => {

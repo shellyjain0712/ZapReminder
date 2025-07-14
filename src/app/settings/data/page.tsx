@@ -7,11 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { 
@@ -67,8 +64,7 @@ export default function DataManagementPage() {
         throw new Error('Failed to fetch reminders');
       }
       
-      const data = await response.json() as { reminders: Array<{ id: string; isCompleted: boolean; createdAt: string }> };
-      const reminders = data.reminders ?? [];
+      const reminders = await response.json() as Array<{ id: string; isCompleted: boolean; createdAt: string }>;
       
       const totalReminders = reminders.length;
       const completedReminders = reminders.filter(r => r.isCompleted).length;
@@ -122,7 +118,7 @@ export default function DataManagementPage() {
           error: 'Failed to export data'
         }
       );
-    } catch (error) {
+    } catch {
       toast.error('Export failed');
     } finally {
       setIsLoading(false);
@@ -135,7 +131,7 @@ export default function DataManagementPage() {
       // Simulate import process
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('Data imported successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to import data');
     } finally {
       setIsLoading(false);
@@ -153,7 +149,7 @@ export default function DataManagementPage() {
           error: 'Failed to create backup'
         }
       );
-    } catch (error) {
+    } catch {
       toast.error('Backup failed');
     } finally {
       setIsLoading(false);
@@ -165,7 +161,7 @@ export default function DataManagementPage() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       toast.success('Old data archived successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to archive data');
     } finally {
       setIsLoading(false);
@@ -186,7 +182,7 @@ export default function DataManagementPage() {
       setShowDeleteDialog(false);
       setDeleteConfirmation('');
       // In a real app, this would sign out the user
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete data');
     } finally {
       setIsLoading(false);
