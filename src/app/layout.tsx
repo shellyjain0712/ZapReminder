@@ -3,6 +3,7 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import Providers from "@/components/Provider";
+import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Smart Reminder",
@@ -43,6 +44,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
+          <Navbar />
           {children}
         </Providers>
       </body>

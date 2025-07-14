@@ -20,7 +20,7 @@ import { CalendarIcon, Plus } from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
 import { toast } from 'sonner';
 import { ReminderCard } from './ReminderCard';
-import { generateGoogleCalendarUrl } from '@/lib/calendar';
+import { addReminderToCalendar } from '@/lib/calendar-integration';
 
 interface Reminder {
   id: string;
@@ -201,25 +201,37 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
                     await fetchReminders();
                     setShowAddDialog(false);
                     
-                    // Automatically add to Google Calendar
-                    try {
-                      const calendarUrl = generateGoogleCalendarUrl({
-                        title: data.title,
-                        description: data.description,
-                        dueDate: new Date(data.dueDate),
-                        reminderTime: data.reminderTime ? new Date(data.reminderTime) : undefined,
-                      });
-                      
-                      // Open calendar in new tab
-                      window.open(calendarUrl, '_blank');
-                      
-                      toast.success('Reminder created and added to calendar! 📅', {
-                        description: 'Check your Google Calendar for the new event'
-                      });
-                    } catch (calendarError) {
-                      console.error('Error adding to calendar:', calendarError);
+                    // Only add to calendar if user enabled the option
+                    if (data.autoAddToCalendar) {
+                      try {
+                        toast.info('📅 Adding to calendar...', {
+                          description: 'Opening calendar integration',
+                          duration: 2000
+                        });
+                        
+                        const result = await addReminderToCalendar(
+                          data.title,
+                          data.description,
+                          new Date(data.dueDate),
+                          data.reminderTime ? new Date(data.reminderTime) : undefined
+                        );
+                        
+                        if (result.success) {
+                          console.log(`✅ Calendar integration: ${result.method} - ${result.message}`);
+                          // Don't show additional success message since the calendar integration shows its own
+                        } else {
+                          console.warn(`⚠️ Calendar integration failed: ${result.message}`);
+                          toast.success('Reminder created successfully');
+                          toast.warning('Calendar integration failed - you can manually add it later');
+                        }
+                      } catch (calendarError) {
+                        console.error('Error with calendar integration:', calendarError);
+                        toast.success('Reminder created successfully');
+                        toast.info('Manual calendar addition: Use the dropdown menu on the reminder card');
+                      }
+                    } else {
+                      // User chose not to add to calendar
                       toast.success('Reminder created successfully');
-                      toast.info('Could not auto-add to calendar. You can manually add it from the reminder card.');
                     }
                   } else {
                     toast.error('Failed to create reminder');
@@ -331,6 +343,7 @@ interface ReminderFormProps {
     emailNotification: boolean;
     pushNotification: boolean;
     reminderTime?: string;
+    autoAddToCalendar?: boolean;
   }) => void;
   onCancel: () => void;
 }
@@ -343,6 +356,7 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
   const [category, setCategory] = useState(reminder?.category ?? '');
   const [emailNotification, setEmailNotification] = useState(reminder?.emailNotification ?? true);
   const [pushNotification, setPushNotification] = useState(reminder?.pushNotification ?? true);
+  const [autoAddToCalendar, setAutoAddToCalendar] = useState(true); // New state for calendar integration
   const [hasSpecificTime, setHasSpecificTime] = useState(!!reminder?.reminderTime);
   const [timeString, setTimeString] = useState(() => {
     if (reminder?.reminderTime) {
@@ -383,6 +397,7 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
       emailNotification,
       pushNotification,
       reminderTime: finalReminderTime?.toISOString(),
+      autoAddToCalendar,
     });
   };
 
@@ -495,6 +510,14 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
             id="push-notification"
             checked={pushNotification}
             onCheckedChange={setPushNotification}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="auto-calendar">📅 Add to Calendar</Label>
+          <Switch
+            id="auto-calendar"
+            checked={autoAddToCalendar}
+            onCheckedChange={setAutoAddToCalendar}
           />
         </div>
       </div>

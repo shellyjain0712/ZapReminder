@@ -13,6 +13,7 @@ const createReminderSchema = z.object({
   emailNotification: z.boolean().default(true),
   pushNotification: z.boolean().default(true),
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
+  autoAddToCalendar: z.boolean().default(true).optional(), // Frontend-only field, won't be saved to DB
 });
 
 // GET - Fetch all reminders for the authenticated user
@@ -96,14 +97,27 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createReminderSchema.parse(body);
 
+    // Extract calendar preference and remove from data to be saved
+    const { autoAddToCalendar, ...reminderData } = validatedData;
+
     const reminder = await db.reminder.create({
       data: {
-        ...validatedData,
+        ...reminderData,
         userId: user.id,
       },
     });
 
-    return NextResponse.json(reminder, { status: 201 });
+    // If calendar integration is enabled, add calendar-related metadata
+    if (autoAddToCalendar) {
+      console.log(`📅 Calendar integration enabled for reminder: ${reminder.title}`);
+      // The calendar integration will be handled on the frontend
+      // We just log it here for server-side tracking
+    }
+
+    return NextResponse.json({
+      ...reminder,
+      calendarIntegrationEnabled: autoAddToCalendar
+    }, { status: 201 });
   } catch (error) {
     console.error("Error creating reminder:", error);
     
