@@ -7,7 +7,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 export default function SignUp() {
@@ -129,9 +128,6 @@ export default function SignUp() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background px-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-3xl text-center">Create Your Account</CardTitle>

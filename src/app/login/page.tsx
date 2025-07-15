@@ -6,7 +6,6 @@ import { FcGoogle } from "react-icons/fc";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 function LoginForm() {
@@ -109,9 +108,6 @@ function LoginForm() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background px-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-3xl text-center">Welcome Back</CardTitle>

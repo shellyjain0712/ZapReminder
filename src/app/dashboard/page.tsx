@@ -1,12 +1,9 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Reminders } from '@/components/Reminders';
 import { toast } from 'sonner';
@@ -52,45 +49,8 @@ function DashboardContent() {
     return null; // Extra safety check
   }
 
-  const handleSignOut = async () => {
-    try {
-      await signOut({ callbackUrl: '/login' });
-      toast.success("Signed out successfully");
-    } catch (err) {
-      console.error("Sign out error:", err);
-      toast.error("Error signing out");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={session.user?.image ?? undefined} />
-                <AvatarFallback>
-                  {session.user?.name?.charAt(0) ?? session.user?.email?.charAt(0) ?? 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium">{session.user?.name ?? 'User'}</p>
-                <p className="text-xs text-muted-foreground">{session.user?.email}</p>
-              </div>
-            </div>
-            <Button variant="outline" onClick={handleSignOut}>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="grid gap-6">

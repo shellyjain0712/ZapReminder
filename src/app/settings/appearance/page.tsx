@@ -22,8 +22,124 @@ import {
   Layout,
   Eye,
   Contrast,
-  Globe
+  Globe,
+  Check
 } from 'lucide-react';
+
+// Theme Toggle Component for the settings page
+function ThemeToggleSection({ theme, setTheme, mounted, resolvedTheme }: {
+  theme: string | undefined;
+  setTheme: (theme: string) => void;
+  mounted: boolean;
+  resolvedTheme: string | undefined;
+}) {
+  const themeOptions = [
+    {
+      value: 'light',
+      label: 'Light',
+      icon: Sun,
+      description: 'Clean and bright interface'
+    },
+    {
+      value: 'dark',
+      label: 'Dark',
+      icon: Moon,
+      description: 'Easy on the eyes in low light'
+    },
+    {
+      value: 'system',
+      label: 'System',
+      icon: Monitor,
+      description: 'Matches your device settings'
+    }
+  ];
+
+  if (!mounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Theme Selection
+          </CardTitle>
+          <CardDescription>
+            Choose your preferred color scheme
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse">
+            <div className="h-20 bg-muted rounded-lg"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Palette className="h-5 w-5" />
+          Theme Selection
+        </CardTitle>
+        <CardDescription>
+          Choose your preferred color scheme. Currently using <Badge variant="secondary">{resolvedTheme}</Badge> theme.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <RadioGroup 
+          value={theme} 
+          onValueChange={(value) => {
+            setTheme(value);
+            toast.success(`Theme changed to ${value === 'system' ? 'system default' : value} mode`);
+          }} 
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        >
+          {themeOptions.map((option) => (
+            <div key={option.value} className="relative">
+              <RadioGroupItem 
+                value={option.value} 
+                id={option.value}
+                className="peer sr-only"
+              />
+              <Label 
+                htmlFor={option.value} 
+                className="flex cursor-pointer flex-col items-center gap-3 p-4 border-2 border-muted rounded-lg hover:border-primary/50 transition-colors peer-checked:border-primary peer-checked:bg-primary/5"
+              >
+                <div className="flex items-center gap-2">
+                  <option.icon className="h-5 w-5" />
+                  <span className="font-medium">{option.label}</span>
+                  {theme === option.value && <Check className="h-4 w-4 text-primary" />}
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  {option.description}
+                </p>
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+        
+        {/* Theme Preview */}
+        <div className="mt-6 p-4 border rounded-lg bg-background">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Theme Preview</span>
+              <Badge>Active</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This is how your interface looks with the current theme.
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm">Primary</Button>
+              <Button variant="secondary" size="sm">Secondary</Button>
+              <Button variant="outline" size="sm">Outline</Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function AppearanceSettingsPage() {
   const { data: session, status } = useSession();
@@ -103,98 +219,23 @@ export default function AppearanceSettingsPage() {
 
   if (!session) return null;
 
-  const themeOptions = [
-    {
-      value: 'light',
-      label: 'Light',
-      icon: Sun,
-      description: 'Clean and bright interface'
-    },
-    {
-      value: 'dark',
-      label: 'Dark',
-      icon: Moon,
-      description: 'Easy on the eyes in low light'
-    },
-    {
-      value: 'system',
-      label: 'System',
-      icon: Monitor,
-      description: 'Matches your device settings'
-    }
-  ];
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Appearance Settings</h1>
         <p className="text-muted-foreground">
-          Customize the look and feel of your application interface.
+          Customize the look and feel of your application interface. All theme controls are now located here.
         </p>
       </div>
 
-      {/* Current Theme Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            Current Theme
-          </CardTitle>
-          <CardDescription>
-            You&apos;re currently using the <Badge variant="secondary">{resolvedTheme}</Badge> theme
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 border rounded-lg bg-background">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Sample Card</span>
-                <Badge>Active</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                This is how your interface looks with the current theme.
-              </p>
-              <div className="flex gap-2">
-                <Button size="sm">Primary</Button>
-                <Button variant="secondary" size="sm">Secondary</Button>
-                <Button variant="outline" size="sm">Outline</Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Theme Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Theme Selection</CardTitle>
-          <CardDescription>
-            Choose your preferred color scheme
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RadioGroup value={theme} onValueChange={setTheme} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {themeOptions.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={option.value} />
-                <Label 
-                  htmlFor={option.value} 
-                  className="flex-1 cursor-pointer"
-                >
-                  <div className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors">
-                    <option.icon className="h-5 w-5" />
-                    <div>
-                      <p className="font-medium">{option.label}</p>
-                      <p className="text-xs text-muted-foreground">{option.description}</p>
-                    </div>
-                  </div>
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </CardContent>
-      </Card>
+      {/* Theme Selection - Enhanced */}
+      <ThemeToggleSection 
+        theme={theme}
+        setTheme={setTheme}
+        mounted={mounted}
+        resolvedTheme={resolvedTheme}
+      />
 
       {/* Typography */}
       <Card>

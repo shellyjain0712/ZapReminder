@@ -5,11 +5,5 @@ export default function SettingsRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-background">
-      <SettingsLayout>
-        {children}
-      </SettingsLayout>
-    </div>
-  );
+  return <SettingsLayout>{children}</SettingsLayout>;
 }

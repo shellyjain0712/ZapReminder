@@ -3,7 +3,6 @@
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -59,18 +58,24 @@ export function Navbar() {
 
   return (
     <header className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Logo and Navigation */}
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">SR</span>
-              </div>
-              <span className="font-bold text-xl hidden sm:block">Smart Reminder</span>
-            </Link>
-            
-            <nav className="hidden md:flex items-center gap-1">
+          {/* Logo */}
+          <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">SR</span>
+            </div>
+            <span className="font-bold text-xl hidden sm:block">Smart Reminder</span>
+            <span className="font-bold text-lg sm:hidden">SR</span>
+          </Link>
+          
+          {/* Spacer */}
+          <div className="flex-1"></div>
+
+          {/* Right side - Navigation & User Menu */}
+          <div className="flex items-center gap-2">
+            {/* Desktop Navigation - moved to right */}
+            <nav className="hidden md:flex items-center gap-1 mr-4">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -90,17 +95,11 @@ export function Navbar() {
                 );
               })}
             </nav>
-          </div>
-
-          {/* Right side - Theme, User Menu */}
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10">
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src={session.user?.image ?? undefined} />
                     <AvatarFallback>
                       {session.user?.name?.charAt(0) ?? session.user?.email?.charAt(0) ?? 'U'}
@@ -111,32 +110,33 @@ export function Navbar() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                    <p className="text-sm font-medium leading-none truncate">
                       {session.user?.name ?? 'User'}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="text-xs leading-none text-muted-foreground truncate">
                       {session.user?.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="cursor-pointer">
-                    <Home className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>
+                {/* Mobile Navigation Items */}
+                <div className="md:hidden">
+                  {navigation.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <DropdownMenuItem key={item.name} asChild>
+                        <Link href={item.href} className="cursor-pointer">
+                          <Icon className="mr-2 h-4 w-4" />
+                          <span>{item.name}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  <DropdownMenuSeparator className="md:hidden" />
+                </div>
                 
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
+                {/* Settings shortcuts */}
                 <DropdownMenuItem asChild>
                   <Link href="/settings/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
@@ -176,30 +176,6 @@ export function Navbar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Mobile Navigation */}
-            <div className="md:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {navigation.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link href={item.href} className="cursor-pointer">
-                          <Icon className="mr-2 h-4 w-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
         </div>
       </div>
