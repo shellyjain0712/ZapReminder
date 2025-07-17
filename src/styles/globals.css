@@ -354,3 +354,123 @@ body {
     image-rendering: crisp-edges;
   }
 }
+
+/* Appearance Preferences Styles */
+
+/* Compact mode - reduce spacing and padding */
+.compact-mode .container {
+  padding: 0.5rem;
+}
+
+.compact-mode .space-y-6 > * + * {
+  margin-top: 1rem;
+}
+
+.compact-mode .space-y-4 > * + * {
+  margin-top: 0.75rem;
+}
+
+.compact-mode .card {
+  padding: 0.75rem;
+}
+
+.compact-mode .p-4 {
+  padding: 0.5rem;
+}
+
+.compact-mode .p-6 {
+  padding: 0.75rem;
+}
+
+.compact-mode .py-3 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.compact-mode .gap-6 {
+  gap: 1rem;
+}
+
+.compact-mode .gap-4 {
+  gap: 0.75rem;
+}
+
+/* No animations mode */
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #333333;
+  --secondary-foreground: #ffffff;
+  --muted: #333333;
+  --muted-foreground: #cccccc;
+  --accent: #ffffff;
+  --accent-foreground: #000000;
+  --border: #ffffff;
+  --input: #000000;
+  --ring: #ffffff;
+}
+
+.high-contrast * {
+  border-color: #ffffff !important;
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border: 2px solid #ffffff !important;
+}
+
+/* Reduced motion mode */
+.reduced-motion {
+  scroll-behavior: auto !important;
+}
+
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.reduced-motion .animate-spin {
+  animation: none !important;
+}
+
+.reduced-motion .animate-pulse {
+  animation: none !important;
+}
+
+/* Font family utilities */
+.font-inter {
+  font-family: "Inter", sans-serif;
+}
+
+.font-roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+.font-open-sans {
+  font-family: "Open Sans", sans-serif;
+}
+
+.font-lato {
+  font-family: "Lato", sans-serif;
+}

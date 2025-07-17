@@ -91,6 +91,13 @@ export default function ProfileSettingsPage() {
         name: updatedProfile.name,
       });
       
+      // Force update the form data to reflect changes immediately
+      setFormData(prev => ({
+        ...prev,
+        name: updatedProfile.name ?? '',
+        email: updatedProfile.email ?? prev.email
+      }));
+      
       toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);

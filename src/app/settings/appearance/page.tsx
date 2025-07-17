@@ -147,6 +147,18 @@ export default function AppearanceSettingsPage() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   
+  // Helper function to get font family CSS
+  const getFontFamilyCSS = (fontFamily: string) => {
+    const fontMap: Record<string, string> = {
+      'system': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      'inter': '"Inter", sans-serif',
+      'roboto': '"Roboto", sans-serif',
+      'open-sans': '"Open Sans", sans-serif',
+      'lato': '"Lato", sans-serif'
+    };
+    return fontMap[fontFamily] ?? fontMap.system;
+  };
+  
   // Appearance preferences
   const [preferences, setPreferences] = useState({
     fontSize: 16,
@@ -163,6 +175,51 @@ export default function AppearanceSettingsPage() {
 
   useEffect(() => {
     setMounted(true);
+    
+    // Load saved preferences from localStorage
+    try {
+      const savedPreferences = localStorage.getItem('appearance-preferences');
+      if (savedPreferences) {
+        const parsed = JSON.parse(savedPreferences) as typeof preferences;
+        
+        // Validate the parsed data has all required properties
+        if (parsed && typeof parsed === 'object' && 
+            typeof parsed.fontSize === 'number' &&
+            typeof parsed.fontFamily === 'string' &&
+            typeof parsed.compactMode === 'boolean' &&
+            typeof parsed.animationsEnabled === 'boolean' &&
+            typeof parsed.highContrast === 'boolean' &&
+            typeof parsed.reducedMotion === 'boolean') {
+          
+          setPreferences(parsed);
+          
+          // Apply saved preferences to the DOM
+          if (parsed.fontSize !== 16) {
+            document.documentElement.style.fontSize = `${parsed.fontSize}px`;
+          }
+          if (parsed.fontFamily !== 'system') {
+            const fontCSS = getFontFamilyCSS(parsed.fontFamily);
+            if (fontCSS) {
+              document.documentElement.style.fontFamily = fontCSS;
+            }
+          }
+          if (parsed.compactMode) {
+            document.documentElement.classList.add('compact-mode');
+          }
+          if (!parsed.animationsEnabled) {
+            document.documentElement.classList.add('no-animations');
+          }
+          if (parsed.highContrast) {
+            document.documentElement.classList.add('high-contrast');
+          }
+          if (parsed.reducedMotion) {
+            document.documentElement.classList.add('reduced-motion');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load appearance preferences:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -182,7 +239,26 @@ export default function AppearanceSettingsPage() {
       // Apply changes immediately for better UX
       if (key === 'fontSize') {
         document.documentElement.style.fontSize = `${value}px`;
+      } else if (key === 'fontFamily') {
+        const fontCSS = getFontFamilyCSS(value as string);
+        if (fontCSS) {
+          document.documentElement.style.fontFamily = fontCSS;
+        }
+      } else if (key === 'compactMode') {
+        document.documentElement.classList.toggle('compact-mode', value as boolean);
+      } else if (key === 'animationsEnabled') {
+        document.documentElement.classList.toggle('no-animations', !(value as boolean));
+      } else if (key === 'highContrast') {
+        document.documentElement.classList.toggle('high-contrast', value as boolean);
+      } else if (key === 'reducedMotion') {
+        document.documentElement.classList.toggle('reduced-motion', value as boolean);
       }
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('appearance-preferences', JSON.stringify({
+        ...preferences,
+        [key]: value
+      }));
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -193,7 +269,7 @@ export default function AppearanceSettingsPage() {
   };
 
   const resetToDefaults = () => {
-    setPreferences({
+    const defaultPreferences = {
       fontSize: 16,
       fontFamily: 'system',
       sidebarPosition: 'left',
@@ -204,8 +280,19 @@ export default function AppearanceSettingsPage() {
       language: 'en',
       dateFormat: 'MM/DD/YYYY',
       timeFormat: '12h'
-    });
+    };
+    
+    setPreferences(defaultPreferences);
     setTheme('system');
+    
+    // Reset DOM to defaults
+    document.documentElement.style.fontSize = '16px';
+    document.documentElement.style.fontFamily = '';
+    document.documentElement.classList.remove('compact-mode', 'no-animations', 'high-contrast', 'reduced-motion');
+    
+    // Clear localStorage
+    localStorage.removeItem('appearance-preferences');
+    
     toast.success('Reset to default settings');
   };
 
