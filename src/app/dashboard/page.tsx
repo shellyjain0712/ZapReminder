@@ -52,8 +52,8 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="grid gap-4 sm:gap-6">
           {/* Welcome Card */}
           <Card>
             <CardHeader>

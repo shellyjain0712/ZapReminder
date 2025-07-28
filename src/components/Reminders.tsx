@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { CalendarIcon, Plus } from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
 import { toast } from 'sonner';
@@ -169,23 +169,29 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">My Reminders</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Reminders</h2>
           <p className="text-muted-foreground">
             Manage your tasks and stay organized
           </p>
         </div>
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Reminder
+            <Button 
+              size="lg"
+              className="w-full sm:w-auto font-medium shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Create Reminder
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[95vw] max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Reminder</DialogTitle>
+              <DialogTitle className="text-lg font-semibold">Create New Reminder</DialogTitle>
+              <DialogDescription>
+                Fill out the form below to create a new reminder. Set a title, description, date, and time for your reminder.
+              </DialogDescription>
             </DialogHeader>
             <ReminderForm
               onSubmit={async (data) => {
@@ -248,24 +254,30 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
       </div>
 
       {/* Filter */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant={filter === 'all' ? 'default' : 'outline'}
           onClick={() => setFilter('all')}
+          size="sm"
+          className="flex-1 sm:flex-none min-w-0"
         >
-          All ({reminders.length})
+          <span className="truncate">All ({reminders.length})</span>
         </Button>
         <Button
           variant={filter === 'pending' ? 'default' : 'outline'}
           onClick={() => setFilter('pending')}
+          size="sm"
+          className="flex-1 sm:flex-none min-w-0"
         >
-          Pending ({reminders.filter(r => !r.isCompleted).length})
+          <span className="truncate">Pending ({reminders.filter(r => !r.isCompleted).length})</span>
         </Button>
         <Button
           variant={filter === 'completed' ? 'default' : 'outline'}
           onClick={() => setFilter('completed')}
+          size="sm"
+          className="flex-1 sm:flex-none min-w-0"
         >
-          Completed ({reminders.filter(r => r.isCompleted).length})
+          <span className="truncate">Completed ({reminders.filter(r => r.isCompleted).length})</span>
         </Button>
       </div>
 
@@ -297,9 +309,12 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
       {/* Edit Dialog */}
       {editingReminder && (
         <Dialog open={!!editingReminder} onOpenChange={() => setEditingReminder(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[95vw] max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Reminder</DialogTitle>
+              <DialogTitle className="text-lg font-semibold">Edit Reminder</DialogTitle>
+              <DialogDescription>
+                Update the details of your reminder. Modify the title, description, date, or time as needed.
+              </DialogDescription>
             </DialogHeader>
             <ReminderForm
               reminder={editingReminder}
@@ -402,33 +417,40 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 px-1">
       <div>
-        <Label htmlFor="title">Title *</Label>
+        <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
         <Input
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter reminder title"
           required
+          className="mt-1"
         />
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className="text-sm font-medium">Description</Label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add description (optional)"
+          className="mt-1 min-h-[80px]"
+          rows={3}
         />
       </div>
 
       <div>
-        <Label>Due Date *</Label>
+        <Label className="text-sm font-medium">Due Date *</Label>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start text-left font-normal">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-left font-normal mt-1"
+              type="button"
+            >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {formatDate(dueDate)}
             </Button>
@@ -446,7 +468,7 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label htmlFor="specific-time">Set Specific Time</Label>
+          <Label htmlFor="specific-time" className="text-sm font-medium">Set Specific Time</Label>
           <Switch
             id="specific-time"
             checked={hasSpecificTime}
@@ -455,13 +477,13 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
         </div>
         {hasSpecificTime && (
           <div>
-            <Label htmlFor="reminder-time">Reminder Time</Label>
+            <Label htmlFor="reminder-time" className="text-sm font-medium">Reminder Time</Label>
             <Input
               id="reminder-time"
               type="time"
               value={timeString}
               onChange={(e) => setTimeString(e.target.value)}
-              className="w-full"
+              className="w-full mt-1"
             />
             <p className="text-xs text-muted-foreground mt-1">
               Set the specific time for this reminder
@@ -470,34 +492,37 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
         )}
       </div>
 
-      <div>
-        <Label>Priority</Label>
-        <Select value={priority} onValueChange={(value) => setPriority(value as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT')}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="LOW">Low</SelectItem>
-            <SelectItem value="MEDIUM">Medium</SelectItem>
-            <SelectItem value="HIGH">High</SelectItem>
-            <SelectItem value="URGENT">Urgent</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label className="text-sm font-medium">Priority</Label>
+          <Select value={priority} onValueChange={(value) => setPriority(value as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT')}>
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="LOW">Low</SelectItem>
+              <SelectItem value="MEDIUM">Medium</SelectItem>
+              <SelectItem value="HIGH">High</SelectItem>
+              <SelectItem value="URGENT">Urgent</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="category" className="text-sm font-medium">Category</Label>
+          <Input
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g., Work, Personal"
+            className="mt-1"
+          />
+        </div>
       </div>
 
-      <div>
-        <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          placeholder="e.g., Work, Personal, Health"
-        />
-      </div>
-
-      <div className="space-y-3">
+      <div className="space-y-3 bg-muted/30 p-3 rounded-lg">
         <div className="flex items-center justify-between">
-          <Label htmlFor="email-notification">Email Notifications</Label>
+          <Label htmlFor="email-notification" className="text-sm font-medium">Email Notifications</Label>
           <Switch
             id="email-notification"
             checked={emailNotification}
@@ -505,7 +530,7 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="push-notification">Push Notifications</Label>
+          <Label htmlFor="push-notification" className="text-sm font-medium">Push Notifications</Label>
           <Switch
             id="push-notification"
             checked={pushNotification}
@@ -513,7 +538,7 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="auto-calendar">📅 Add to Calendar</Label>
+          <Label htmlFor="auto-calendar" className="text-sm font-medium">📅 Add to Calendar</Label>
           <Switch
             id="auto-calendar"
             checked={autoAddToCalendar}
@@ -522,12 +547,20 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
         </div>
       </div>
 
-      <div className="flex gap-2 pt-4">
-        <Button type="submit" className="flex-1">
-          {reminder ? 'Update' : 'Create'} Reminder
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel}
+          className="w-full sm:w-auto"
+        >
           Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          className="w-full sm:flex-1 font-medium"
+        >
+          {reminder ? 'Update' : 'Create'} Reminder
         </Button>
       </div>
     </form>
