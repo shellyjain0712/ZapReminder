@@ -190,7 +190,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold">Create New Reminder</DialogTitle>
               <DialogDescription>
-                Fill out the form below to create a new reminder. Set a title, description, date, and time for your reminder.
+                Fill out the form below to create a new reminder. Set the due date, priority, and notification preferences.
               </DialogDescription>
             </DialogHeader>
             <ReminderForm
@@ -313,7 +313,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold">Edit Reminder</DialogTitle>
               <DialogDescription>
-                Update the details of your reminder. Modify the title, description, date, or time as needed.
+                Modify the reminder details below. Update the title, description, due date, priority, or notification settings.
               </DialogDescription>
             </DialogHeader>
             <ReminderForm
