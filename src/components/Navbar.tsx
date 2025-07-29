@@ -20,7 +20,8 @@ import {
   LogOut,
   Shield,
   Bell,
-  Palette
+  Palette,
+  Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -45,6 +46,12 @@ export function Navbar() {
       href: '/dashboard',
       icon: Home,
       current: pathname === '/dashboard'
+    },
+    {
+      name: 'Calendar',
+      href: '/test-calendar',
+      icon: Calendar,
+      current: pathname === '/test-calendar'
     },
     {
       name: 'Settings',

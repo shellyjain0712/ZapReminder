@@ -135,7 +135,12 @@ export function ReminderCard({
               onCheckedChange={(checked) => 
                 onToggleComplete(reminder.id, checked as boolean)
               }
-              className={isOverdue() ? 'border-red-400 data-[state=checked]:bg-red-500' : ''}
+              className={`
+                cursor-pointer bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 
+                data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white 
+                shadow-sm hover:shadow-md transition-shadow
+                ${isOverdue() ? 'border-red-400 data-[state=checked]:bg-red-500' : ''}
+              `}
             />
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
