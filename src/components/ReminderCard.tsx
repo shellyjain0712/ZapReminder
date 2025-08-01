@@ -139,13 +139,13 @@ export function ReminderCard({
                 cursor-pointer bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 
                 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white 
                 shadow-sm hover:shadow-md transition-shadow
-                ${isOverdue() ? 'border-red-400 data-[state=checked]:bg-red-500' : ''}
+                ${isOverdue() ? 'border-red-400 dark:border-red-500 data-[state=checked]:bg-red-500 dark:data-[state=checked]:bg-red-600' : ''}
               `}
             />
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className={`font-medium ${reminder.isCompleted ? 'line-through' : ''} ${
-                  isOverdue() ? 'text-red-800 font-semibold overdue-text-glow' : ''
+                  isOverdue() ? 'text-red-600 dark:text-red-400 font-semibold' : ''
                 }`}>
                   {reminder.title}
                 </h3>
@@ -154,13 +154,13 @@ export function ReminderCard({
                 </Badge>
                 {reminder.category && (
                   <Badge variant="outline" className={`text-xs ${
-                    isOverdue() ? 'border-red-300 text-red-700 bg-red-50' : ''
+                    isOverdue() ? 'border-red-400 dark:border-red-500 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30' : ''
                   }`}>
                     {reminder.category}
                   </Badge>
                 )}
                 {isOverdue() && !reminder.isCompleted && (
-                  <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs shadow-md border-0 overdue-badge-pulse hover:animate-none hover:scale-105 transition-transform">
+                  <Badge className="bg-red-500 dark:bg-red-600/70 text-white text-xs shadow-sm border-0 transition-colors">
                     <span className="flex items-center gap-1">
                       ⚠️ OVERDUE
                     </span>
@@ -170,14 +170,14 @@ export function ReminderCard({
               
               {reminder.description && (
                 <p className={`text-sm ${
-                  isOverdue() ? 'text-red-700' : 'text-muted-foreground'
+                  isOverdue() ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
                 }`}>
                   {reminder.description}
                 </p>
               )}
               
               <div className={`flex items-center gap-4 text-xs flex-wrap ${
-                isOverdue() ? 'text-red-600 font-medium' : 'text-muted-foreground'
+                isOverdue() ? 'text-red-600 dark:text-red-400 font-medium' : 'text-muted-foreground'
               }`}>
                 <div className="flex items-center gap-1">
                   <CalendarIcon className={`h-3 w-3 ${isOverdue() ? 'text-red-500' : ''}`} />
@@ -187,8 +187,8 @@ export function ReminderCard({
                 </div>
                 {reminder.reminderTime && (
                   <div className="flex items-center gap-1">
-                    <Clock className={`h-3 w-3 ${isOverdue() ? 'text-red-500' : 'text-muted-foreground'}`} />
-                    <span className={isOverdue() ? 'font-semibold text-red-700' : ''}>
+                    <Clock className={`h-3 w-3 ${isOverdue() ? 'text-red-500 dark:text-red-400' : 'text-muted-foreground'}`} />
+                    <span className={isOverdue() ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
                       {formatTime(reminder.reminderTime)}
                     </span>
                   </div>
@@ -206,7 +206,7 @@ export function ReminderCard({
                   </div>
                 )}
                 {isOverdue() && (
-                  <div className="flex items-center gap-1 overdue-time-indicator px-2 py-1 rounded-full text-white font-semibold text-xs">
+                  <div className="flex items-center gap-1 bg-red-500 dark:bg-red-600/70 px-2 py-1 rounded-full text-white font-semibold text-xs">
                     <Clock className="h-3 w-3" />
                     <span>
                       {(() => {
@@ -256,16 +256,6 @@ export function ReminderCard({
               <DropdownMenuItem onClick={handleAddToGoogleCalendar}>
                 <Calendar className="h-4 w-4 mr-2" />
                 Add to Google Calendar
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem onClick={handleAddToOutlookCalendar}>
-                <Calendar className="h-4 w-4 mr-2" />
-                Add to Outlook Calendar
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem onClick={handleDownloadICS}>
-                <Download className="h-4 w-4 mr-2" />
-                Download .ics file
               </DropdownMenuItem>
               
               <DropdownMenuItem 

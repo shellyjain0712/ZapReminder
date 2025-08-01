@@ -180,8 +180,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
           <DialogTrigger asChild>
             <Button 
               size="lg"
-              className="w-full sm:w-auto font-medium shadow-sm hover:shadow-md transition-all duration-200"
-            >
+              className="w-full sm:w-auto font-medium shadow-sm hover:shadow-md transition-all duration-200">
               <Plus className="h-5 w-5 mr-2" />
               Create Reminder
             </Button>

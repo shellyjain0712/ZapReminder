@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -328,13 +329,13 @@ export default function CalendarPage() {
                 <div className="space-y-1 lg:space-y-2">
                   {selectedDateReminders.map((reminder) => (
                     <Card key={reminder.id} className="p-2 hover:shadow-md transition-shadow border-border">
-                      <div className="flex items-start gap-2">
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           checked={reminder.isCompleted}
                           onCheckedChange={(checked) => 
                             toggleReminderComplete(reminder.id, checked as boolean)
                           }
-                          className="mt-0.5 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shadow-sm"
+                          className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shadow-sm cursor-pointer"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 mb-1">
