@@ -166,13 +166,22 @@ export function SimpleSettings() {
     
     // Load settings from localStorage
     const savedSettings = localStorage.getItem('zapreminder-settings');
+    console.log('Loading settings from localStorage:', savedSettings);
+    
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings) as Partial<SettingsData>;
-        setSettings(prev => ({ ...prev, ...parsed }));
+        console.log('Parsed settings:', parsed);
+        setSettings(prev => {
+          const updated = { ...prev, ...parsed };
+          console.log('Updated settings state:', updated);
+          return updated;
+        });
       } catch (error) {
         console.error('Error loading settings:', error);
       }
+    } else {
+      console.log('No saved settings found, using defaults');
     }
 
     // Load user stats
@@ -187,13 +196,18 @@ export function SimpleSettings() {
   }, [session, loadUserStats]);
 
   const saveSettings = async (newSettings: Partial<SettingsData>) => {
+    console.log('Saving settings:', newSettings);
     setIsLoading(true);
     try {
       const updatedSettings = { ...settings, ...newSettings };
+      console.log('Updated settings:', updatedSettings);
+      
+      // Update state immediately
       setSettings(updatedSettings);
       
       // Save to localStorage immediately for quick response
       localStorage.setItem('zapreminder-settings', JSON.stringify(updatedSettings));
+      console.log('Settings saved to localStorage');
       
       // Try to sync with server if logged in
       if (session?.user?.email) {
@@ -206,7 +220,9 @@ export function SimpleSettings() {
             body: JSON.stringify(updatedSettings),
           });
           
-          if (!response.ok) {
+          if (response.ok) {
+            console.log('Settings synced with server successfully');
+          } else {
             console.warn('Failed to sync settings with server, but saved locally');
           }
         } catch (syncError) {
@@ -477,12 +493,46 @@ export function SimpleSettings() {
 
               <div className="space-y-4">
                 <h4 className="font-medium">Preferences</h4>
+                
+                {/* Debug section - remove this after testing */}
+                <div className="p-3 bg-muted rounded-lg text-xs">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold mb-2">Current Settings (Debug):</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <span>Language: {settings.language}</span>
+                        <span>Timezone: {settings.timezone}</span>
+                        <span>Date Format: {settings.dateFormat}</span>
+                        <span>Week Starts: {settings.weekStartsOn}</span>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => {
+                        localStorage.removeItem('zapreminder-settings');
+                        window.location.reload();
+                      }}
+                      className="text-xs"
+                    >
+                      Clear & Reload
+                    </Button>
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Language</Label>
-                    <Select value={settings.language} onValueChange={(value) => saveSettings({ language: value })}>
+                    <Select 
+                      value={settings.language} 
+                      onValueChange={(value) => {
+                        console.log('Language changed to:', value);
+                        void saveSettings({ language: value });
+                      }}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="en">English</SelectItem>
@@ -494,9 +544,16 @@ export function SimpleSettings() {
                   </div>
                   <div className="space-y-2">
                     <Label>Timezone</Label>
-                    <Select value={settings.timezone} onValueChange={(value) => saveSettings({ timezone: value })}>
+                    <Select 
+                      value={settings.timezone} 
+                      onValueChange={(value) => {
+                        console.log('Timezone changed to:', value);
+                        void saveSettings({ timezone: value });
+                      }}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select timezone" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="UTC">UTC</SelectItem>
@@ -509,9 +566,16 @@ export function SimpleSettings() {
                   </div>
                   <div className="space-y-2">
                     <Label>Date Format</Label>
-                    <Select value={settings.dateFormat} onValueChange={(value) => saveSettings({ dateFormat: value })}>
+                    <Select 
+                      value={settings.dateFormat} 
+                      onValueChange={(value) => {
+                        console.log('Date format changed to:', value);
+                        void saveSettings({ dateFormat: value });
+                      }}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select date format" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="MM/dd/yyyy">MM/DD/YYYY</SelectItem>
@@ -522,9 +586,16 @@ export function SimpleSettings() {
                   </div>
                   <div className="space-y-2">
                     <Label>Week Starts On</Label>
-                    <Select value={settings.weekStartsOn} onValueChange={(value) => saveSettings({ weekStartsOn: value })}>
+                    <Select 
+                      value={settings.weekStartsOn} 
+                      onValueChange={(value) => {
+                        console.log('Week starts on changed to:', value);
+                        void saveSettings({ weekStartsOn: value });
+                      }}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select day" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="sunday">Sunday</SelectItem>
