@@ -31,6 +31,158 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
+// Language translations
+const translations = {
+  en: {
+    settings: 'Settings',
+    manageAccount: 'Manage your account preferences and application settings',
+    quickStats: 'Quick Stats',
+    totalReminders: 'Total Reminders',
+    completed: 'Completed',
+    storageUsed: 'Storage Used',
+    account: 'Account',
+    notifications: 'Notifications',
+    appearance: 'Appearance',
+    privacy: 'Privacy',
+    data: 'Data',
+    profileInfo: 'Profile Information',
+    profileInformation: 'Profile Information',
+    managePersonal: 'Manage your personal information and account settings',
+    managePersonalInfo: 'Manage your personal information and account settings',
+    fullName: 'Full Name',
+    emailAddress: 'Email Address',
+    memberSince: 'Member Since',
+    accountStatus: 'Account Status',
+    active: 'Active',
+    notSet: 'Not set',
+    preferences: 'Preferences',
+    language: 'Language',
+    timezone: 'Timezone',
+    dateFormat: 'Date Format',
+    weekStarts: 'Week Starts On',
+    weekStartsOn: 'Week Starts On',
+    selectLanguage: 'Select language',
+    sunday: 'Sunday',
+    monday: 'Monday'
+  },
+  es: {
+    settings: 'Configuración',
+    manageAccount: 'Gestiona las preferencias de tu cuenta y la configuración de la aplicación',
+    quickStats: 'Estadísticas Rápidas',
+    totalReminders: 'Recordatorios Totales',
+    completed: 'Completados',
+    storageUsed: 'Almacenamiento Usado',
+    account: 'Cuenta',
+    notifications: 'Notificaciones',
+    appearance: 'Apariencia',
+    privacy: 'Privacidad',
+    data: 'Datos',
+    profileInfo: 'Información del Perfil',
+    profileInformation: 'Información del Perfil',
+    managePersonal: 'Gestiona tu información personal y configuración de cuenta',
+    managePersonalInfo: 'Gestiona tu información personal y configuración de cuenta',
+    fullName: 'Nombre Completo',
+    emailAddress: 'Dirección de Email',
+    memberSince: 'Miembro Desde',
+    accountStatus: 'Estado de la Cuenta',
+    active: 'Activo',
+    notSet: 'No establecido',
+    preferences: 'Preferencias',
+    language: 'Idioma',
+    timezone: 'Zona Horaria',
+    dateFormat: 'Formato de Fecha',
+    weekStarts: 'La Semana Comienza',
+    weekStartsOn: 'La Semana Comienza En',
+    selectLanguage: 'Seleccionar idioma',
+    sunday: 'Domingo',
+    monday: 'Lunes'
+  },
+  fr: {
+    settings: 'Paramètres',
+    manageAccount: 'Gérez vos préférences de compte et les paramètres de l\'application',
+    quickStats: 'Statistiques Rapides',
+    totalReminders: 'Rappels Totaux',
+    completed: 'Terminés',
+    storageUsed: 'Stockage Utilisé',
+    account: 'Compte',
+    notifications: 'Notifications',
+    appearance: 'Apparence',
+    privacy: 'Confidentialité',
+    data: 'Données',
+    profileInfo: 'Informations du Profil',
+    profileInformation: 'Informations du Profil',
+    managePersonal: 'Gérez vos informations personnelles et paramètres de compte',
+    managePersonalInfo: 'Gérez vos informations personnelles et paramètres de compte',
+    fullName: 'Nom Complet',
+    emailAddress: 'Adresse Email',
+    memberSince: 'Membre Depuis',
+    accountStatus: 'Statut du Compte',
+    active: 'Actif',
+    notSet: 'Non défini',
+    preferences: 'Préférences',
+    language: 'Langue',
+    timezone: 'Fuseau Horaire',
+    dateFormat: 'Format de Date',
+    weekStarts: 'La Semaine Commence',
+    weekStartsOn: 'La Semaine Commence Le',
+    selectLanguage: 'Sélectionner la langue',
+    sunday: 'Dimanche',
+    monday: 'Lundi'
+  },
+  de: {
+    settings: 'Einstellungen',
+    manageAccount: 'Verwalten Sie Ihre Kontoeinstellungen und Anwendungseinstellungen',
+    quickStats: 'Schnelle Statistiken',
+    totalReminders: 'Gesamte Erinnerungen',
+    completed: 'Abgeschlossen',
+    storageUsed: 'Speicher Verwendet',
+    account: 'Konto',
+    notifications: 'Benachrichtigungen',
+    appearance: 'Erscheinungsbild',
+    privacy: 'Datenschutz',
+    data: 'Daten',
+    profileInfo: 'Profilinformationen',
+    profileInformation: 'Profilinformationen',
+    managePersonal: 'Verwalten Sie Ihre persönlichen Informationen und Kontoeinstellungen',
+    managePersonalInfo: 'Verwalten Sie Ihre persönlichen Informationen und Kontoeinstellungen',
+    fullName: 'Vollständiger Name',
+    emailAddress: 'E-Mail-Adresse',
+    memberSince: 'Mitglied Seit',
+    accountStatus: 'Kontostatus',
+    active: 'Aktiv',
+    notSet: 'Nicht festgelegt',
+    preferences: 'Einstellungen',
+    language: 'Sprache',
+    timezone: 'Zeitzone',
+    dateFormat: 'Datumsformat',
+    weekStarts: 'Woche Beginnt',
+    weekStartsOn: 'Woche Beginnt Am',
+    selectLanguage: 'Sprache auswählen',
+    sunday: 'Sonntag',
+    monday: 'Montag'
+  }
+};
+
+// Date formatting function
+const formatDate = (date: string | Date, format: string, language: string) => {
+  const dateObj = new Date(date);
+  const locale = language === 'en' ? 'en-US' : 
+                language === 'es' ? 'es-ES' : 
+                language === 'fr' ? 'fr-FR' : 
+                language === 'de' ? 'de-DE' : 'en-US';
+  
+  switch (format) {
+    case 'MM/dd/yyyy':
+      return dateObj.toLocaleDateString('en-US');
+    case 'dd/MM/yyyy':
+      return dateObj.toLocaleDateString('en-GB');
+    case 'yyyy-MM-dd':
+      return dateObj.toISOString().split('T')[0];
+    default:
+      return dateObj.toLocaleDateString(locale);
+  }
+};
+
 interface SettingsData {
   emailNotifications: boolean;
   pushNotifications: boolean;
@@ -104,6 +256,39 @@ export function SimpleSettings() {
   const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
   const [activeTab, setActiveTab] = useState('account');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Get current language translations
+  const t = translations[settings.language as keyof typeof translations] || translations.en;
+
+  // Apply styles based on settings
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    // Apply high contrast
+    if (settings.highContrast) {
+      root.classList.add('high-contrast');
+      root.style.setProperty('--contrast-multiplier', '1.5');
+    } else {
+      root.classList.remove('high-contrast');
+      root.style.removeProperty('--contrast-multiplier');
+    }
+    
+    // Apply compact view
+    if (settings.compactView) {
+      root.classList.add('compact-view');
+      root.style.setProperty('--spacing-multiplier', '0.75');
+    } else {
+      root.classList.remove('compact-view');
+      root.style.removeProperty('--spacing-multiplier');
+    }
+    
+    // Apply animations setting
+    if (!settings.animationsEnabled) {
+      root.style.setProperty('--animation-duration', '0s');
+    } else {
+      root.style.removeProperty('--animation-duration');
+    }
+  }, [settings.highContrast, settings.compactView, settings.animationsEnabled]);
 
   const loadUserStats = useCallback(async () => {
     try {
@@ -396,26 +581,26 @@ export function SimpleSettings() {
       {/* Header with Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t.settings}</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your account preferences and application settings
+            {t.manageAccount}
           </p>
         </div>
         <Card className="lg:col-span-1">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Quick Stats</CardTitle>
+            <CardTitle className="text-lg">{t.quickStats}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Total Reminders</span>
+              <span className="text-sm text-muted-foreground">{t.totalReminders}</span>
               <span className="font-semibold">{userStats.totalReminders}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Completed</span>
+              <span className="text-sm text-muted-foreground">{t.completed}</span>
               <span className="font-semibold text-green-600">{userStats.completedReminders}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Storage Used</span>
+              <span className="text-sm text-muted-foreground">{t.storageUsed}</span>
               <span className="font-semibold">{userStats.storageUsed} KB</span>
             </div>
           </CardContent>
@@ -427,23 +612,23 @@ export function SimpleSettings() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="account" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            Account
+            {t.account}
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            {t.notifications}
           </TabsTrigger>
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            Appearance
+            {t.appearance}
           </TabsTrigger>
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            Privacy
+            {t.privacy}
           </TabsTrigger>
           <TabsTrigger value="data" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
-            Data
+            {t.data}
           </TabsTrigger>
         </TabsList>
 
@@ -453,38 +638,38 @@ export function SimpleSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Profile Information
+                {t.profileInformation}
               </CardTitle>
               <CardDescription>
-                Manage your personal information and account settings
+                {t.managePersonalInfo}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Full Name</Label>
+                  <Label className="text-sm font-medium">{t.fullName}</Label>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm">{session.user?.name ?? 'Not set'}</p>
+                    <p className="text-sm">{session.user?.name ?? t.notSet}</p>
                     <Badge variant="outline">
                       {session.user?.image ? 'Google' : 'Email'}
                     </Badge>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Email Address</Label>
+                  <Label className="text-sm font-medium">{t.emailAddress}</Label>
                   <p className="text-sm text-muted-foreground">{session.user?.email}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Member Since</Label>
+                  <Label className="text-sm font-medium">{t.memberSince}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(userStats.joinDate).toLocaleDateString()}
+                    {formatDate(new Date(userStats.joinDate), settings.language, settings.dateFormat)}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Account Status</Label>
+                  <Label className="text-sm font-medium">{t.accountStatus}</Label>
                   <Badge variant="secondary" className="w-fit">
                     <CheckCircle className="h-3 w-3 mr-1" />
-                    Active
+                    {t.active}
                   </Badge>
                 </div>
               </div>
@@ -492,37 +677,11 @@ export function SimpleSettings() {
               <Separator />
 
               <div className="space-y-4">
-                <h4 className="font-medium">Preferences</h4>
-                
-                {/* Debug section - remove this after testing */}
-                <div className="p-3 bg-muted rounded-lg text-xs">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold mb-2">Current Settings (Debug):</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <span>Language: {settings.language}</span>
-                        <span>Timezone: {settings.timezone}</span>
-                        <span>Date Format: {settings.dateFormat}</span>
-                        <span>Week Starts: {settings.weekStartsOn}</span>
-                      </div>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => {
-                        localStorage.removeItem('zapreminder-settings');
-                        window.location.reload();
-                      }}
-                      className="text-xs"
-                    >
-                      Clear & Reload
-                    </Button>
-                  </div>
-                </div>
+                <h4 className="font-medium">{t.preferences}</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Language</Label>
+                    <Label>{t.language}</Label>
                     <Select 
                       value={settings.language} 
                       onValueChange={(value) => {
@@ -536,14 +695,14 @@ export function SimpleSettings() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="es">Spanish</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="fr">Français</SelectItem>
+                        <SelectItem value="de">Deutsch</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Timezone</Label>
+                    <Label>{t.timezone}</Label>
                     <Select 
                       value={settings.timezone} 
                       onValueChange={(value) => {
@@ -565,7 +724,7 @@ export function SimpleSettings() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Date Format</Label>
+                    <Label>{t.dateFormat}</Label>
                     <Select 
                       value={settings.dateFormat} 
                       onValueChange={(value) => {
@@ -585,7 +744,7 @@ export function SimpleSettings() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Week Starts On</Label>
+                    <Label>{t.weekStartsOn}</Label>
                     <Select 
                       value={settings.weekStartsOn} 
                       onValueChange={(value) => {
@@ -598,8 +757,8 @@ export function SimpleSettings() {
                         <SelectValue placeholder="Select day" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sunday">Sunday</SelectItem>
-                        <SelectItem value="monday">Monday</SelectItem>
+                        <SelectItem value="sunday">{t.sunday}</SelectItem>
+                        <SelectItem value="monday">{t.monday}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
