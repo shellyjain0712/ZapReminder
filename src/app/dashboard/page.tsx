@@ -6,7 +6,6 @@ import { useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Reminders } from '@/components/Reminders';
-import { NotificationSettings } from '@/components/QuickNotificationSettings';
 import { toast } from 'sonner';
 
 function DashboardContent() {
@@ -80,9 +79,6 @@ function DashboardContent() {
                     <span className="text-sm text-muted-foreground">{session.user.name}</span>
                   </div>
                 )}
-                
-                {/* Notification Settings */}
-                <NotificationSettings />
               </div>
             </CardContent>
           </Card>

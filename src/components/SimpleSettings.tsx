@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -105,6 +105,59 @@ export function SimpleSettings() {
   const [activeTab, setActiveTab] = useState('account');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const loadUserStats = useCallback(async () => {
+    try {
+      const response = await fetch('/api/reminders');
+      if (response.ok) {
+        const reminders = await response.json() as Array<{
+          id: string;
+          isCompleted: boolean;
+          dueDate: string;
+          createdAt: string;
+        }>;
+        
+        const now = new Date();
+        const completed = reminders.filter(r => r.isCompleted).length;
+        const overdue = reminders.filter(r => 
+          !r.isCompleted && new Date(r.dueDate) < now
+        ).length;
+        
+        // Calculate join date from oldest reminder or session creation
+        const oldestReminder = reminders.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )[0];
+        
+        // Calculate streak (simplified - days with completed reminders in last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const recentCompletions = reminders.filter(r => 
+          r.isCompleted && new Date(r.createdAt) > thirtyDaysAgo
+        );
+        const streak = Math.min(recentCompletions.length, 30);
+        
+        setUserStats({
+          totalReminders: reminders.length,
+          completedReminders: completed,
+          overdueReminders: overdue,
+          streakDays: streak,
+          joinDate: oldestReminder?.createdAt ?? session?.user?.email ? new Date().toISOString() : new Date().toISOString(),
+          storageUsed: Math.floor(JSON.stringify(reminders).length / 1024) // KB
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user stats:', error);
+      // Set default stats if API fails
+      setUserStats({
+        totalReminders: 0,
+        completedReminders: 0,
+        overdueReminders: 0,
+        streakDays: 0,
+        joinDate: session?.user?.email ? new Date().toISOString() : new Date().toISOString(),
+        storageUsed: 0
+      });
+    }
+  }, [session?.user?.email]);
+
   useEffect(() => {
     // Check push notification permission
     if ('Notification' in window) {
@@ -124,43 +177,14 @@ export function SimpleSettings() {
 
     // Load user stats
     void loadUserStats();
-  }, []);
+  }, [loadUserStats]);
 
-  const loadUserStats = async () => {
-    try {
-      const response = await fetch('/api/reminders');
-      if (response.ok) {
-        const reminders = await response.json() as Array<{
-          id: string;
-          isCompleted: boolean;
-          dueDate: string;
-          createdAt: string;
-        }>;
-        
-        const now = new Date();
-        const completed = reminders.filter(r => r.isCompleted).length;
-        const overdue = reminders.filter(r => 
-          !r.isCompleted && new Date(r.dueDate) < now
-        ).length;
-        
-        // Calculate join date from oldest reminder
-        const oldestReminder = reminders.sort((a, b) => 
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        )[0];
-        
-        setUserStats({
-          totalReminders: reminders.length,
-          completedReminders: completed,
-          overdueReminders: overdue,
-          streakDays: Math.floor(Math.random() * 30), // Placeholder
-          joinDate: oldestReminder?.createdAt ?? new Date().toISOString(),
-          storageUsed: Math.floor(JSON.stringify(reminders).length / 1024) // KB
-        });
-      }
-    } catch (error) {
-      console.error('Error loading user stats:', error);
+  // Separate useEffect for session-dependent operations
+  useEffect(() => {
+    if (session) {
+      void loadUserStats();
     }
-  };
+  }, [session, loadUserStats]);
 
   const saveSettings = async (newSettings: Partial<SettingsData>) => {
     setIsLoading(true);
@@ -168,8 +192,27 @@ export function SimpleSettings() {
       const updatedSettings = { ...settings, ...newSettings };
       setSettings(updatedSettings);
       
-      // Save to localStorage
+      // Save to localStorage immediately for quick response
       localStorage.setItem('zapreminder-settings', JSON.stringify(updatedSettings));
+      
+      // Try to sync with server if logged in
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/user/settings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedSettings),
+          });
+          
+          if (!response.ok) {
+            console.warn('Failed to sync settings with server, but saved locally');
+          }
+        } catch (syncError) {
+          console.warn('Server sync failed, settings saved locally:', syncError);
+        }
+      }
       
       toast.success('Settings saved successfully');
     } catch (error) {
@@ -181,65 +224,126 @@ export function SimpleSettings() {
   };
 
   const requestPushPermission = async () => {
-    if ('Notification' in window) {
+    if (!('Notification' in window)) {
+      toast.error('This browser does not support notifications');
+      return;
+    }
+
+    try {
       const permission = await Notification.requestPermission();
       setPushPermission(permission);
+      
       if (permission === 'granted') {
         await saveSettings({ pushNotifications: true });
         toast.success('Push notifications enabled');
+        
+        // Show a welcome notification
+        setTimeout(() => {
+          new Notification('ZapReminder Notifications Enabled! 🎉', {
+            body: 'You\'ll now receive reminders and updates directly in your browser.',
+            icon: '/favicon.ico',
+            tag: 'welcome-notification'
+          });
+        }, 500);
+      } else if (permission === 'denied') {
+        toast.error('Push notifications denied. You can enable them in your browser settings.');
       } else {
-        toast.error('Push notifications denied');
+        toast.info('Push notification permission was dismissed');
       }
+    } catch (error) {
+      console.error('Error requesting push permission:', error);
+      toast.error('Failed to request notification permission');
     }
   };
 
   const testNotification = () => {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('ZapReminder Test', {
-        body: 'This is a test notification from your settings!',
+    if (!('Notification' in window)) {
+      toast.error('This browser does not support notifications');
+      return;
+    }
+
+    if (Notification.permission !== 'granted') {
+      toast.error('Notifications not enabled. Please enable them first.');
+      return;
+    }
+
+    try {
+      const notification = new Notification('ZapReminder Test Notification 🔔', {
+        body: 'This is a test notification from your settings. If you can see this, notifications are working perfectly!',
         icon: '/favicon.ico',
-        tag: 'test-notification'
+        tag: 'test-notification',
+        requireInteraction: false
       });
-      toast.success('Test notification sent');
-    } else {
-      toast.error('Notifications not enabled');
+
+      // Auto-close after 5 seconds
+      setTimeout(() => {
+        notification.close();
+      }, 5000);
+
+      toast.success('Test notification sent successfully!');
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      toast.error('Failed to send test notification');
     }
   };
 
   const exportData = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/reminders');
-      if (response.ok) {
-        const reminders = await response.json() as unknown[];
-        const exportData = {
-          exportDate: new Date().toISOString(),
-          user: session?.user?.email,
-          reminders,
-          settings,
-          stats: userStats
-        };
-        
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-          type: 'application/json'
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `zapreminder-data-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-        
-        toast.success('Data exported successfully');
+      // Fetch reminders data
+      const reminderResponse = await fetch('/api/reminders');
+      let reminders: unknown[] = [];
+      
+      if (reminderResponse.ok) {
+        reminders = await reminderResponse.json() as unknown[];
       }
+
+      // Create comprehensive export data
+      const exportData = {
+        exportInfo: {
+          exportDate: new Date().toISOString(),
+          version: '1.0.0',
+          source: 'ZapReminder Settings'
+        },
+        user: {
+          email: session?.user?.email,
+          name: session?.user?.name,
+          joinDate: userStats.joinDate
+        },
+        reminders,
+        settings,
+        statistics: userStats,
+        metadata: {
+          totalItems: reminders.length,
+          settingsVersion: 1,
+          browserInfo: navigator.userAgent
+        }
+      };
+      
+      // Create and download file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `zapreminder-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`Data exported successfully! ${reminders.length} reminders included.`);
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Failed to export data');
+      toast.error('Failed to export data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const resetSettings = () => {
-    localStorage.removeItem('zapreminder-settings');
-    setSettings({
+    const defaultSettings: SettingsData = {
       emailNotifications: true,
       pushNotifications: true,
       soundEnabled: true,
@@ -261,8 +365,12 @@ export function SimpleSettings() {
       compactView: false,
       animationsEnabled: true,
       highContrast: false
-    });
-    toast.success('Settings reset to defaults');
+    };
+
+    localStorage.removeItem('zapreminder-settings');
+    setSettings(defaultSettings);
+    setActiveTab('account'); // Reset to first tab
+    toast.success('Settings reset to defaults successfully!');
   };
 
   if (!session) return null;
