@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/server/auth";
-import { db } from "@/server/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "~/server/auth";
+import { db } from "~/server/db";
 import { z } from "zod";
 
 // Validation schema
@@ -16,7 +17,7 @@ const shareReminderSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -67,14 +68,13 @@ export async function POST(request: NextRequest) {
       LIMIT 1
     `;
 
-    if (Array.isArray(existingCollaboration) && existingCollaboration.length > 0) {
+    if ((existingCollaboration as any[]).length > 0) {
       return NextResponse.json({ 
         error: "This reminder is already shared with this user" 
       }, { status: 409 });
     }
 
     // Create the collaboration entry with proper enum casting
-    console.log('🔧 Creating collaboration with proper enum casting...');
     await db.$executeRaw`
       INSERT INTO "Collaboration" (
         id, "reminderId", "senderId", "receiverId", 
@@ -111,7 +111,11 @@ export async function POST(request: NextRequest) {
       // Fallback - might have different schema
     }
 
-    // Note: Reminder isShared flag will be updated when Prisma client is regenerated
+    // Update the reminder to mark it as shared
+    await db.reminder.update({
+      where: { id: validatedData.reminderId },
+      data: { isShared: true },
+    });
 
     return NextResponse.json({
       success: true,
@@ -123,12 +127,12 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("Database error in collaboration sharing:", error);
     
     // Handle specific database errors
-    if (error && typeof error === 'object' && 'code' in error) {
-      const dbError = error as { code: string; message?: string };
+    if (error?.code === 'P2010') {
+      const dbError = error as any;
       if (dbError.code === '42P01') { // Table doesn't exist
         return NextResponse.json({
           error: "Database tables not ready. Please run the setup script first.",
@@ -154,7 +158,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       error: "Failed to share reminder",
-      details: process.env.NODE_ENV === 'development' ? String(error) : "Internal server error"
+      details: process.env.NODE_ENV === 'development' ? error.message : "Internal server error"
     }, { status: 500 });
   }
 }

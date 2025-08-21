@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Test if collaborative tables exist and create them if needed
 import { PrismaClient } from '@prisma/client';
 
@@ -104,7 +105,7 @@ async function checkCollaborativeTables() {
         ADD COLUMN IF NOT EXISTS "isShared" BOOLEAN DEFAULT false
       `;
       console.log('✅ Added isShared column to Reminder table');
-    } catch (error: any) {
+    } catch (error) {
       console.log('❌ Failed to add isShared column:', error.message);
     }
     
