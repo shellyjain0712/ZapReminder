@@ -65,6 +65,15 @@ model User {
     sessions      Session[]
     posts         Post[]
     reminders     Reminder[]
+    
+    // Collaborative features
+    sharedReminders     SharedReminder[]
+    sentCollaborations  Collaboration[] @relation("CollaborationSender")
+    receivedCollaborations Collaboration[] @relation("CollaborationReceiver")
+    
+    // Friendship/Connection system
+    sentConnections     UserConnection[] @relation("ConnectionSender")
+    receivedConnections UserConnection[] @relation("ConnectionReceiver")
 }
 
 model VerificationToken {
@@ -105,10 +114,103 @@ model Reminder {
     reminderTime      DateTime? // When to send reminder notification
     isSnooze          Boolean  @default(false)
     snoozeUntil       DateTime?
+    
+    // Collaborative features
+    isShared          Boolean @default(false)
+    sharedReminders   SharedReminder[]
+    collaborations    Collaboration[]
 
     @@index([userId])
     @@index([dueDate])
     @@index([isCompleted])
+    @@index([isShared])
+}
+
+// User connections/friendships
+model UserConnection {
+    id           String            @id @default(cuid())
+    senderId     String
+    receiverId   String
+    status       ConnectionStatus  @default(PENDING)
+    createdAt    DateTime         @default(now())
+    updatedAt    DateTime         @updatedAt
+    
+    sender       User             @relation("ConnectionSender", fields: [senderId], references: [id], onDelete: Cascade)
+    receiver     User             @relation("ConnectionReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+    
+    @@unique([senderId, receiverId])
+    @@index([senderId])
+    @@index([receiverId])
+    @@index([status])
+}
+
+// Shared reminders with specific users
+model SharedReminder {
+    id           String                @id @default(cuid())
+    reminderId   String
+    userId       String
+    role         SharedReminderRole    @default(VIEWER)
+    canEdit      Boolean              @default(false)
+    canComplete  Boolean              @default(false)
+    createdAt    DateTime             @default(now())
+    
+    reminder     Reminder             @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+    user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@unique([reminderId, userId])
+    @@index([reminderId])
+    @@index([userId])
+    @@index([role])
+}
+
+// Collaboration invitations and assignments
+model Collaboration {
+    id           String               @id @default(cuid())
+    reminderId   String
+    senderId     String
+    receiverId   String
+    type         CollaborationType    @default(SHARE)
+    status       CollaborationStatus  @default(PENDING)
+    role         SharedReminderRole   @default(VIEWER)
+    message      String?
+    createdAt    DateTime            @default(now())
+    updatedAt    DateTime            @updatedAt
+    
+    reminder     Reminder            @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+    sender       User                @relation("CollaborationSender", fields: [senderId], references: [id], onDelete: Cascade)
+    receiver     User                @relation("CollaborationReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+    
+    @@index([reminderId])
+    @@index([senderId])
+    @@index([receiverId])
+    @@index([status])
+    @@index([type])
+}
+
+enum ConnectionStatus {
+    PENDING
+    ACCEPTED
+    BLOCKED
+}
+
+enum SharedReminderRole {
+    VIEWER      // Can view only
+    EDITOR      // Can edit reminder
+    ASSIGNEE    // Responsible for completing the reminder
+    MANAGER     // Can manage sharing and permissions
+}
+
+enum CollaborationType {
+    SHARE       // Share a reminder for viewing/editing
+    ASSIGN      // Assign responsibility for completion
+    TRANSFER    // Transfer ownership
+}
+
+enum CollaborationStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+    CANCELLED
 }
 
 enum Priority {

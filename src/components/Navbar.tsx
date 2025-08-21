@@ -21,7 +21,8 @@ import {
   Shield,
   Bell,
   Palette,
-  Calendar
+  Calendar,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,12 @@ export function Navbar() {
       href: '/test-calendar',
       icon: Calendar,
       current: pathname === '/test-calendar'
+    },
+    {
+      name: 'Collaborative',
+      href: '/collaborative',
+      icon: Users,
+      current: pathname === '/collaborative'
     },
     {
       name: 'Settings',
