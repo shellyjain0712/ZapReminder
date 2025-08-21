@@ -1,8 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
@@ -17,7 +13,7 @@ const createReminderSchema = z.object({
   emailNotification: z.boolean().default(true),
   pushNotification: z.boolean().default(true),
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
-  autoAddToCalendar: z.boolean().default(true).optional(),
+  autoAddToCalendar: z.boolean().default(true).optional(), // Frontend-only field, won't be saved to DB
 });
 
 // GET - Fetch all reminders for the authenticated user
@@ -41,14 +37,21 @@ export async function GET(request: Request) {
     const priority = searchParams.get("priority");
     const category = searchParams.get("category");
 
-    const whereClause: any = { userId: user.id };
+    interface WhereClause {
+      userId: string;
+      isCompleted?: boolean;
+      priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+      category?: string;
+    }
+
+    const whereClause: WhereClause = { userId: user.id };
     
     if (completed !== null) {
       whereClause.isCompleted = completed === "true";
     }
     
     if (priority && ["LOW", "MEDIUM", "HIGH", "URGENT"].includes(priority)) {
-      whereClause.priority = priority;
+      whereClause.priority = priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT";
     }
     
     if (category) {
@@ -90,6 +93,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = await request.json();
     const validatedData = createReminderSchema.parse(body);
 
@@ -106,6 +110,8 @@ export async function POST(request: Request) {
     // If calendar integration is enabled, add calendar-related metadata
     if (autoAddToCalendar) {
       console.log(`📅 Calendar integration enabled for reminder: ${reminder.title}`);
+      // The calendar integration will be handled on the frontend
+      // We just log it here for server-side tracking
     }
 
     return NextResponse.json({
