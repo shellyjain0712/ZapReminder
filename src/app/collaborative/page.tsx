@@ -104,14 +104,14 @@ export default function CollaborativePage() {
 
     setIsSharing(true);
     try {
-      const response = await fetch('/api/reminders/collaborative', {
+      const response = await fetch('/api/reminders/collaborative/share', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           reminderId: selectedReminder.id,
-          email: shareEmail.trim(),
+          recipientEmail: shareEmail.trim(),
           role: shareRole,
           message: shareMessage.trim(),
         }),
