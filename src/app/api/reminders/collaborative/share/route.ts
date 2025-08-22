@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/server/auth";
-import { db } from "@/server/db";
-import { z } from "zod";
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/server/auth';
+import { db } from '@/server/db';
+import { z } from 'zod';
 
 // Validation schema
 const shareReminderSchema = z.object({

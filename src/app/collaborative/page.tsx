@@ -13,11 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Share2, Users, Clock, CheckCircle, AlertCircle, Mail, UserPlus, Gift, Crown, Target, Eye, Edit } from 'lucide-react';
+import { Share2, Users, Clock, CheckCircle, AlertCircle, Mail, UserPlus, Gift, Crown, Target, Eye, Edit, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ReminderForm } from '@/components/Reminders';
+import { addReminderToCalendar } from '@/lib/calendar-integration';
 
 interface Reminder {
   id: string;
@@ -68,6 +70,9 @@ export default function CollaborativePage() {
   const [shareMessage, setShareMessage] = useState('');
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  
+  // Create reminder dialog state
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Fetch collaborative data
   const fetchData = async () => {
@@ -134,6 +139,37 @@ export default function CollaborativePage() {
       toast.error('Failed to share reminder');
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const handleInvitationResponse = async (invitationId: string, action: 'accept' | 'decline') => {
+    try {
+      const response = await fetch('/api/collaborations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collaborationId: invitationId,
+          action,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(
+          action === 'accept' 
+            ? '✅ Invitation accepted! The reminder has been added to your shared list.' 
+            : '❌ Invitation declined.'
+        );
+        fetchData(); // Refresh data to update the UI
+      } else {
+        toast.error(data.error || `Failed to ${action} invitation`);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing invitation:`, error);
+      toast.error(`Failed to ${action} invitation`);
     }
   };
 
@@ -210,7 +246,7 @@ export default function CollaborativePage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Users className="h-8 w-8 text-primary" />
@@ -220,21 +256,103 @@ export default function CollaborativePage() {
             Share reminders with friends and family, assign tasks, and collaborate effectively.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Share2 className="h-3 w-3" />
-            {myReminders.length} My Reminders
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Gift className="h-3 w-3" />
-            {sharedWithMe.length} Shared With Me
-          </Badge>
-          {pendingInvitations.length > 0 && (
-            <Badge variant="destructive" className="flex items-center gap-1">
-              <Mail className="h-3 w-3" />
-              {pendingInvitations.length} Pending
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Share2 className="h-3 w-3" />
+              {myReminders.length} My Reminders
             </Badge>
-          )}
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Gift className="h-3 w-3" />
+              {sharedWithMe.length} Shared With Me
+            </Badge>
+            {pendingInvitations.length > 0 && (
+              <Badge variant="destructive" className="flex items-center gap-1">
+                <Mail className="h-3 w-3" />
+                {pendingInvitations.length} Pending
+              </Badge>
+            )}
+          </div>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size="default"
+                className="w-full  sm:w-auto font-medium bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md transition-all duration-200">
+                <Plus className="size-4  mr-2" />
+                Create Reminder
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[95vw] max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-lg font-semibold">Create New Collaborative Reminder</DialogTitle>
+                <DialogDescription>
+                  Create a new reminder and optionally share it with team members. Perfect for collaborative tasks and team coordination.
+                </DialogDescription>
+              </DialogHeader>
+              <ReminderForm
+                onSubmit={async (data) => {
+                  try {
+                    // Check if we have collaborators
+                    const hasCollaborators = data.collaborators && data.collaborators.length > 0;
+                    
+                    const response = await fetch('/api/reminders', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(data),
+                    });
+
+                    if (response.ok) {
+                      await fetchData(); // Refresh collaborative data
+                      setIsCreateDialogOpen(false);
+                      
+                      // Show success message with collaboration info
+                      if (hasCollaborators) {
+                        toast.success(`🎉 Collaborative reminder created and shared with ${data.collaborators!.length} team member(s)!`, {
+                          description: 'Invitation emails have been sent. Perfect for team coordination!',
+                          duration: 4000,
+                        });
+                      } else {
+                        toast.success('✅ Reminder created successfully! Share it with team members anytime.');
+                      }
+                      
+                      // Only add to calendar if user enabled the option
+                      if (data.autoAddToCalendar) {
+                        try {
+                          toast.info('📅 Adding to calendar...', {
+                            description: 'Opening calendar integration',
+                            duration: 2000
+                          });
+                          
+                          const result = await addReminderToCalendar(
+                            data.title,
+                            data.description,
+                            new Date(data.dueDate),
+                            data.reminderTime ? new Date(data.reminderTime) : undefined
+                          );
+                          
+                          if (result.success) {
+                            console.log(`✅ Calendar integration: ${result.method} - ${result.message}`);
+                          } else {
+                            console.warn(`⚠️ Calendar integration failed: ${result.message}`);
+                            toast.warning('Calendar integration failed - you can manually add it later');
+                          }
+                        } catch (calendarError) {
+                          console.error('Error with calendar integration:', calendarError);
+                          toast.info('Manual calendar addition: Use the dropdown menu on the reminder card');
+                        }
+                      }
+                    } else {
+                      toast.error('Failed to create reminder');
+                    }
+                  } catch (error) {
+                    console.error('Error creating reminder:', error);
+                    toast.error('Failed to create reminder');
+                  }
+                }}
+                onCancel={() => setIsCreateDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -322,7 +440,7 @@ export default function CollaborativePage() {
                   <p className="text-muted-foreground mb-4">Create a reminder first to start collaborating.</p>
                   <Button onClick={() => window.location.href = '/dashboard'} className="gap-2">
                     <UserPlus className="h-4 w-4" />
-                    Create Reminder
+                    {/* Create Reminder */}
                   </Button>
                 </div>
               ) : (
@@ -468,38 +586,66 @@ export default function CollaborativePage() {
             <CardContent>
               {pendingInvitations.length === 0 ? (
                 <div className="text-center py-12">
-                  <Mail className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No pending invitations</h3>
-                  <p className="text-muted-foreground">Collaboration invitations will appear here when you receive them.</p>
+                  <div className="mx-auto w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mb-4">
+                    <Mail className="h-10 w-10 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 text-gray-900">No pending invitations</h3>
+                  <p className="text-gray-500 max-w-sm mx-auto">
+                    When someone shares a reminder with you, collaboration invitations will appear here. 
+                    You&apos;ll be able to accept or decline them easily.
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-4">
                   {pendingInvitations.map((invitation) => (
-                    <Card key={invitation.id} className="border-l-4 border-l-yellow-500 hover:shadow-md transition-shadow">
+                    <Card key={invitation.id} className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-blue-50/30 to-white">
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-lg">{invitation.reminder.title}</h3>
-                              <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                              <Mail className="h-4 w-4 text-blue-600" />
+                              <h3 className="font-semibold text-lg text-gray-900">{invitation.reminder.title}</h3>
+                              <Badge variant="outline" className="text-blue-600 border-blue-600 bg-blue-50">
                                 <AlertCircle className="h-3 w-3 mr-1" />
                                 {invitation.type}
                               </Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground mb-2">{invitation.message}</p>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <UserPlus className="h-3 w-3" />
-                              <span>From {invitation.inviter.name || invitation.inviter.email}</span>
+                            {invitation.message && (
+                              <div className="mb-3 p-3 bg-gray-50 rounded-lg border-l-2 border-blue-300">
+                                <p className="text-sm text-gray-700 italic">
+                                  &quot;{invitation.message}&quot;
+                                </p>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <Avatar className="h-5 w-5">
+                                <AvatarFallback className="text-xs bg-blue-100 text-blue-600">
+                                  {invitation.inviter.name?.[0] || invitation.inviter.email[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">From {invitation.inviter.name || invitation.inviter.email}</span>
                               <span>•</span>
+                              <Clock className="h-3 w-3" />
                               <span>{formatDate(invitation.createdAt)}</span>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="hover:bg-red-50 hover:text-red-600 hover:border-red-200">
-                              Decline
-                            </Button>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                          <div className="flex flex-col gap-2 ml-4">
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition-all"
+                              onClick={() => handleInvitationResponse(invitation.id, 'accept')}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
                               Accept
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                              onClick={() => handleInvitationResponse(invitation.id, 'decline')}
+                            >
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Decline
                             </Button>
                           </div>
                         </div>

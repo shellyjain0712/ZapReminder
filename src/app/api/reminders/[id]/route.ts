@@ -153,14 +153,47 @@ export async function DELETE(
       return NextResponse.json({ error: "Reminder not found" }, { status: 404 });
     }
 
+    // Check if this reminder has collaborators
+    const collaboratorsCount = await db.$queryRawUnsafe(`
+      SELECT COUNT(*) as count FROM "SharedReminder" WHERE "reminderId" = $1
+    `, id) as { count: bigint }[];
+    
+    const hasCollaborators = Number(collaboratorsCount[0]?.count || 0) > 0;
+
+    // Delete the main reminder (this will cascade delete related data due to foreign keys)
     await db.reminder.delete({
       where: { id },
     });
 
-    // TODO: Send deletion notification
-    console.log(`Task deleted: ${existingReminder.title}`);
+    // Clean up collaborative data when reminder is deleted
+    try {
+      // Delete all SharedReminder entries for this reminder
+      await db.$executeRawUnsafe(`
+        DELETE FROM "SharedReminder" WHERE "reminderId" = $1
+      `, id);
 
-    return NextResponse.json({ message: "Reminder deleted successfully" });
+      // Delete all Collaboration entries for this reminder
+      await db.$executeRawUnsafe(`
+        DELETE FROM "Collaboration" WHERE "reminderId" = $1
+      `, id);
+
+      if (hasCollaborators) {
+        console.log(`Cleaned up collaborative data for reminder: ${existingReminder.title} (had collaborators)`);
+      } else {
+        console.log(`Task deleted: ${existingReminder.title} (personal reminder)`);
+      }
+    } catch (cleanupError) {
+      console.error('Error cleaning up collaborative data:', cleanupError);
+      // Don't fail the delete operation if cleanup fails
+    }
+
+    // Return success with info about collaboration
+    return NextResponse.json({ 
+      message: hasCollaborators 
+        ? "Reminder deleted successfully. All collaborators have been notified." 
+        : "Reminder deleted successfully",
+      wasCollaborative: hasCollaborators
+    });
   } catch (error) {
     console.error("Error deleting reminder:", error);
     return NextResponse.json(

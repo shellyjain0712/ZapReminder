@@ -6,6 +6,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion */
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
 import { db } from '@/server/db';
@@ -46,17 +47,17 @@ export async function GET() {
     let pendingInvitations: unknown[] = [];
 
     try {
-      // Check if SharedReminder table exists and has data
+      // Get shared reminders using correct column names
       const sharedQuery = `
         SELECT sr.*, r.*, u1.name as shared_by_name, u1.email as shared_by_email 
         FROM "SharedReminder" sr 
         JOIN "Reminder" r ON sr."reminderId" = r.id 
-        JOIN "User" u1 ON sr."sharedById" = u1.id 
-        WHERE sr."sharedWithId" = $1 AND sr.status = 'ACTIVE'
+        JOIN "User" u1 ON r."userId" = u1.id 
+        WHERE sr."userId" = $1
         ORDER BY sr."createdAt" DESC
       `;
       
-      // Use raw query as fallback
+      // Use raw query to get shared reminders
       const sharedResults = await db.$queryRawUnsafe(sharedQuery, user.id) as any[];
       sharedWithMe = sharedResults.map((sr: any) => ({
         id: sr.id,
@@ -73,13 +74,13 @@ export async function GET() {
         sharedAt: sr.createdAt,
       }));
 
-      // Get pending invitations
+      // Get pending invitations using correct column names
       const inviteQuery = `
         SELECT c.*, u.name as inviter_name, u.email as inviter_email, r.title as reminder_title
         FROM "Collaboration" c 
-        JOIN "User" u ON c."inviterId" = u.id 
+        JOIN "User" u ON c."senderId" = u.id 
         JOIN "Reminder" r ON c."reminderId" = r.id 
-        WHERE c."inviteeId" = $1 AND c.status = 'PENDING'
+        WHERE c."receiverId" = $1 AND c.status = 'PENDING'
         ORDER BY c."createdAt" DESC
       `;
       
@@ -88,6 +89,7 @@ export async function GET() {
         id: inv.id,
         type: inv.type,
         message: inv.message,
+        role: inv.role,
         inviter: {
           name: inv.inviter_name,
           email: inv.inviter_email,

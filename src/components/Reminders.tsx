@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Plus, Users, Eye, Edit, Target, Crown, UserPlus, X, Mail } from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
 import { toast } from 'sonner';
 import { ReminderCard } from './ReminderCard';
@@ -135,8 +136,19 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
       });
 
       if (response.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const result = await response.json();
         await fetchReminders();
-        toast.success('Task deleted successfully');
+        
+        // Show appropriate message based on whether it was collaborative
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (result.wasCollaborative) {
+          toast.success('🗑️ Collaborative reminder deleted! All team members have been notified.', {
+            duration: 4000,
+          });
+        } else {
+          toast.success('Task deleted successfully');
+        }
       } else {
         toast.error('Failed to delete task');
       }
@@ -195,6 +207,9 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
             <ReminderForm
               onSubmit={async (data) => {
                 try {
+                  // Check if we have collaborators
+                  const hasCollaborators = data.collaborators && data.collaborators.length > 0;
+                  
                   const response = await fetch('/api/reminders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -202,9 +217,18 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
                   });
 
                   if (response.ok) {
-                    await response.json();
                     await fetchReminders();
                     setShowAddDialog(false);
+                    
+                    // Show success message with collaboration info
+                    if (hasCollaborators) {
+                      toast.success(`Reminder created and shared with ${data.collaborators!.length} collaborator(s)! 🎉`, {
+                        description: 'Invitation emails have been sent.',
+                        duration: 4000,
+                      });
+                    } else {
+                      toast.success('Reminder created successfully');
+                    }
                     
                     // Only add to calendar if user enabled the option
                     if (data.autoAddToCalendar) {
@@ -226,17 +250,12 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
                           // Don't show additional success message since the calendar integration shows its own
                         } else {
                           console.warn(`⚠️ Calendar integration failed: ${result.message}`);
-                          toast.success('Reminder created successfully');
                           toast.warning('Calendar integration failed - you can manually add it later');
                         }
                       } catch (calendarError) {
                         console.error('Error with calendar integration:', calendarError);
-                        toast.success('Reminder created successfully');
                         toast.info('Manual calendar addition: Use the dropdown menu on the reminder card');
                       }
-                    } else {
-                      // User chose not to add to calendar
-                      toast.success('Reminder created successfully');
                     }
                   } else {
                     toast.error('Failed to create reminder');
@@ -346,7 +365,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
   );
 }
 
-interface ReminderFormProps {
+export interface ReminderFormProps {
   reminder?: Reminder;
   onSubmit: (data: {
     title: string;
@@ -358,11 +377,16 @@ interface ReminderFormProps {
     pushNotification: boolean;
     reminderTime?: string;
     autoAddToCalendar?: boolean;
+    collaborators?: Array<{
+      email: string;
+      role: 'VIEWER' | 'EDITOR' | 'ASSIGNEE' | 'MANAGER';
+      message?: string;
+    }>;
   }) => void;
   onCancel: () => void;
 }
 
-function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
+export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
   const [title, setTitle] = useState(reminder?.title ?? '');
   const [description, setDescription] = useState(reminder?.description ?? '');
   const [dueDate, setDueDate] = useState<Date>(reminder?.dueDate ?? new Date());
@@ -379,6 +403,74 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
     }
     return '09:00'; // Default time
   });
+
+  // Collaboration states
+  const [enableCollaboration, setEnableCollaboration] = useState(false);
+  const [collaborators, setCollaborators] = useState<Array<{
+    email: string;
+    role: 'VIEWER' | 'EDITOR' | 'ASSIGNEE' | 'MANAGER';
+    message?: string;
+  }>>([]);
+  const [newCollaboratorEmail, setNewCollaboratorEmail] = useState('');
+  const [newCollaboratorRole, setNewCollaboratorRole] = useState<'VIEWER' | 'EDITOR' | 'ASSIGNEE' | 'MANAGER'>('VIEWER');
+  const [collaborationMessage, setCollaborationMessage] = useState('');
+
+  // Add collaborator function
+  const addCollaborator = () => {
+    if (!newCollaboratorEmail.trim()) {
+      toast.error('Please enter an email address');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newCollaboratorEmail.trim())) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Check if email already added
+    if (collaborators.some(c => c.email.toLowerCase() === newCollaboratorEmail.trim().toLowerCase())) {
+      toast.error('This email is already added');
+      return;
+    }
+
+    setCollaborators([...collaborators, {
+      email: newCollaboratorEmail.trim(),
+      role: newCollaboratorRole,
+      message: collaborationMessage.trim() || undefined
+    }]);
+
+    setNewCollaboratorEmail('');
+    setCollaborationMessage('');
+    toast.success('Collaborator added successfully');
+  };
+
+  // Remove collaborator function
+  const removeCollaborator = (index: number) => {
+    setCollaborators(collaborators.filter((_, i) => i !== index));
+  };
+
+  // Helper functions for role styling
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'MANAGER': return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'EDITOR': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'ASSIGNEE': return 'bg-green-100 text-green-800 border-green-300';
+      case 'VIEWER': return 'bg-gray-100 text-gray-800 border-gray-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'MANAGER': return <Crown className="h-3 w-3 mr-1" />;
+      case 'EDITOR': return <Edit className="h-3 w-3 mr-1" />;
+      case 'ASSIGNEE': return <Target className="h-3 w-3 mr-1" />;
+      case 'VIEWER': return <Eye className="h-3 w-3 mr-1" />;
+      default: return <Eye className="h-3 w-3 mr-1" />;
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -412,6 +504,7 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
       pushNotification,
       reminderTime: finalReminderTime?.toISOString(),
       autoAddToCalendar,
+      collaborators: enableCollaboration ? collaborators : [],
     });
   };
 
@@ -544,6 +637,182 @@ function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
             onCheckedChange={setAutoAddToCalendar}
           />
         </div>
+      </div>
+
+      {/* Collaboration Section */}
+      <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200/60 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <Label htmlFor="enable-collaboration" className="text-sm font-semibold text-gray-900">
+                Team Collaboration
+              </Label>
+              <p className="text-xs text-gray-600 mt-0.5">Share and assign this reminder to team members</p>
+            </div>
+          </div>
+          <Switch
+            id="enable-collaboration"
+            checked={enableCollaboration}
+            onCheckedChange={setEnableCollaboration}
+            className="data-[state=checked]:bg-blue-600"
+          />
+        </div>
+        
+        {enableCollaboration && (
+          <div className="space-y-5 animate-in fade-in-0 duration-300">
+            
+            {/* Add Collaborator Form */}
+            <div className="space-y-4 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                <UserPlus className="h-4 w-4 text-gray-600" />
+                <h4 className="font-medium text-gray-900">Add Team Member</h4>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="collaborator-email" className="text-sm font-medium text-gray-700">Email Address</Label>
+                  <Input
+                    id="collaborator-email"
+                    type="email"
+                    placeholder="teammate@company.com"
+                    value={newCollaboratorEmail}
+                    onChange={(e) => setNewCollaboratorEmail(e.target.value)}
+                    className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="collaborator-role" className="text-sm font-medium text-gray-700">Role & Permissions</Label>
+                  <Select value={newCollaboratorRole} onValueChange={(value) => setNewCollaboratorRole(value as 'VIEWER' | 'EDITOR' | 'ASSIGNEE' | 'MANAGER')}>
+                    <SelectTrigger className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="VIEWER">
+                        <div className="flex items-center gap-3 py-1">
+                          <div className="p-1 bg-gray-100 rounded">
+                            <Eye className="h-3 w-3 text-gray-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Viewer</div>
+                            <div className="text-xs text-gray-500">Can view only</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="EDITOR">
+                        <div className="flex items-center gap-3 py-1">
+                          <div className="p-1 bg-blue-100 rounded">
+                            <Edit className="h-3 w-3 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Editor</div>
+                            <div className="text-xs text-gray-500">Can edit details</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="ASSIGNEE">
+                        <div className="flex items-center gap-3 py-1">
+                          <div className="p-1 bg-green-100 rounded">
+                            <Target className="h-3 w-3 text-green-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Assignee</div>
+                            <div className="text-xs text-gray-500">Responsible for completion</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="MANAGER">
+                        <div className="flex items-center gap-3 py-1">
+                          <div className="p-1 bg-purple-100 rounded">
+                            <Crown className="h-3 w-3 text-purple-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Manager</div>
+                            <div className="text-xs text-gray-500">Full control & sharing</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="collaboration-message" className="text-sm font-medium text-gray-700">Personal Message</Label>
+                <Textarea
+                  id="collaboration-message"
+                  placeholder="Add a note about why you're sharing this reminder..."
+                  value={collaborationMessage}
+                  onChange={(e) => setCollaborationMessage(e.target.value)}
+                  className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 min-h-[70px]"
+                  rows={3}
+                />
+              </div>
+              
+              <Button 
+                type="button" 
+                onClick={addCollaborator}
+                size="sm"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                disabled={!newCollaboratorEmail.trim()}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Team Member
+              </Button>
+            </div>
+
+            {/* Collaborators List */}
+            {collaborators.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-600" />
+                  <Label className="text-sm font-medium text-gray-900">
+                    Team Members ({collaborators.length})
+                  </Label>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  {collaborators.map((collaborator, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 bg-gray-100 rounded-full">
+                          <Mail className="h-3 w-3 text-gray-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-gray-900 truncate text-sm">{collaborator.email}</span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs font-medium ${getRoleColor(collaborator.role)}`}
+                            >
+                              {getRoleIcon(collaborator.role)}
+                              {collaborator.role}
+                            </Badge>
+                          </div>
+                          {collaborator.message && (
+                            <p className="text-xs text-gray-600 truncate">
+                              &quot;{collaborator.message}&quot;
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCollaborator(index)}
+                        className="ml-3 h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">

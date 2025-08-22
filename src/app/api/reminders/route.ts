@@ -18,6 +18,11 @@ const createReminderSchema = z.object({
   pushNotification: z.boolean().default(true),
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
   autoAddToCalendar: z.boolean().default(true).optional(),
+  collaborators: z.array(z.object({
+    email: z.string().email(),
+    role: z.enum(["VIEWER", "EDITOR", "ASSIGNEE", "MANAGER"]),
+    message: z.string().optional(),
+  })).optional(),
 });
 
 // GET - Fetch all reminders for the authenticated user
@@ -93,8 +98,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createReminderSchema.parse(body);
 
-    // Extract calendar preference and remove from data to be saved
-    const { autoAddToCalendar, ...reminderData } = validatedData;
+    // Extract calendar preference and collaborators from data to be saved
+    const { autoAddToCalendar, collaborators, ...reminderData } = validatedData;
 
     const reminder = await db.reminder.create({
       data: {
@@ -103,6 +108,34 @@ export async function POST(request: Request) {
       },
     });
 
+    // Handle collaborators if provided
+    let collaborationCount = 0;
+    if (collaborators && collaborators.length > 0) {
+      try {
+        for (const collaborator of collaborators) {
+          // Find the collaborator user by email
+          const collaboratorUser = await db.user.findUnique({
+            where: { email: collaborator.email },
+          });
+
+          if (collaboratorUser) {
+            // Create collaboration invitation
+            await db.$executeRawUnsafe(`
+              INSERT INTO "Collaboration" (id, "reminderId", "senderId", "receiverId", type, status, role, message, "createdAt", "updatedAt")
+              VALUES (gen_random_uuid(), $1, $2, $3, 'SHARE'::"CollaborationType", 'PENDING'::"CollaborationStatus", $4::"SharedReminderRole", $5, NOW(), NOW())
+            `, reminder.id, user.id, collaboratorUser.id, collaborator.role, collaborator.message ?? null);
+            
+            collaborationCount++;
+          } else {
+            console.warn(`Collaborator email not found: ${collaborator.email}`);
+          }
+        }
+      } catch (collaborationError) {
+        console.error('Error creating collaborations:', collaborationError);
+        // Don't fail the reminder creation if collaboration fails
+      }
+    }
+
     // If calendar integration is enabled, add calendar-related metadata
     if (autoAddToCalendar) {
       console.log(`📅 Calendar integration enabled for reminder: ${reminder.title}`);
@@ -110,7 +143,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ...reminder,
-      calendarIntegrationEnabled: autoAddToCalendar
+      calendarIntegrationEnabled: autoAddToCalendar,
+      collaborationsCreated: collaborationCount,
+      message: collaborationCount > 0 
+        ? `Reminder created and shared with ${collaborationCount} collaborator(s)`
+        : 'Reminder created successfully'
     }, { status: 201 });
   } catch (error) {
     console.error("Error creating reminder:", error);
