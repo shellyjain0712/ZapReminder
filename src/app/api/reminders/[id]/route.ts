@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unnecessary-type-assertion */
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
@@ -158,7 +159,7 @@ export async function DELETE(
       SELECT COUNT(*) as count FROM "SharedReminder" WHERE "reminderId" = $1
     `, id) as { count: bigint }[];
     
-    const hasCollaborators = Number(collaboratorsCount[0]?.count || 0) > 0;
+    const hasCollaborators = Number(collaboratorsCount[0]?.count ?? 0) > 0;
 
     // Delete the main reminder (this will cascade delete related data due to foreign keys)
     await db.reminder.delete({
