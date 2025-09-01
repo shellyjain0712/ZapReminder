@@ -34,6 +34,7 @@ interface Reminder {
   emailNotification: boolean;
   pushNotification: boolean;
   reminderTime?: Date;
+  notificationTime?: Date; // When to send advance notification email
   isSnooze: boolean;
   snoozeUntil?: Date;
   createdAt: Date;
@@ -578,12 +579,17 @@ export interface ReminderFormProps {
     emailNotification: boolean;
     pushNotification: boolean;
     reminderTime?: string;
+    notificationTime?: string;
     autoAddToCalendar?: boolean;
     collaborators?: Array<{
       email: string;
       role: 'VIEWER' | 'EDITOR' | 'ASSIGNEE' | 'MANAGER';
       message?: string;
     }>;
+    isRecurring?: boolean;
+    recurrenceType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM';
+    recurrenceInterval?: number;
+    preDueNotifications?: number[];
   }) => void;
   onCancel: () => void;
 }
@@ -936,7 +942,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-700">Advance Notice Time</Label>
-                      <p className="text-xs text-gray-500">When to send "reminder coming up" email</p>
+                      <p className="text-xs text-gray-500">When to send &quot;reminder coming up&quot; email</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
