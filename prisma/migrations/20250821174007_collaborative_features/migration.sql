@@ -101,6 +101,7 @@ CREATE TABLE "Reminder" (
     "isSnooze" BOOLEAN NOT NULL DEFAULT false,
     "snoozeUntil" TIMESTAMP(3),
     "isShared" BOOLEAN NOT NULL DEFAULT false,
+    "notificationTime" TIMESTAMP(3),
 
     CONSTRAINT "Reminder_pkey" PRIMARY KEY ("id")
 );

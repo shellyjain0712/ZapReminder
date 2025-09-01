@@ -28,7 +28,7 @@ function isReminderTimeNow(reminderTime: Date, now: Date): boolean {
 }
 
 // Helper to check if it's time for advance notification - handles both notification time and 1-hour-before logic
-function isAdvanceNotificationTime(targetTime: Date, now: Date, useExactTime: boolean = false): boolean {
+function isAdvanceNotificationTime(targetTime: Date, now: Date, useExactTime = false): boolean {
   if (useExactTime) {
     // For user-set notification time, check if it's within 1 minute of the target time
     const timeDiff = Math.abs(targetTime.getTime() - now.getTime());
@@ -210,13 +210,13 @@ export async function processRecurringReminders() {
 
       // 1. Check for advance notification (at user-set notification time)  
       if (reminder.notificationTime && shouldSendAdvanceNotification(reminder as ReminderData, now)) {
-        console.log(`Sending advance notification for "${reminder.title}" at user-set time ${reminder.notificationTime}`);
+        console.log(`Sending advance notification for "${reminder.title}" at user-set time ${new Date(reminder.notificationTime).toISOString()}`);
         
         try {
           await sendReminderNotification({
             type: "reminder-due-soon",
             reminderTitle: reminder.title,
-            userEmail: reminder.user.email!,
+            userEmail: reminder.user.email || '',
             userName: reminder.user.name ?? undefined,
             dueDate: dueDate,
             reminderTime: reminder.reminderTime ? new Date(reminder.reminderTime) : dueDate,
@@ -237,10 +237,10 @@ export async function processRecurringReminders() {
           await sendReminderNotification({
             type: "reminder-time",
             reminderTitle: reminder.title,
-            userEmail: reminder.user.email!,
+            userEmail: reminder.user.email || '',
             userName: reminder.user.name ?? undefined,
             dueDate: dueDate,
-            reminderTime: new Date(reminder.reminderTime),
+            reminderTime: reminder.reminderTime,
             description: reminder.description ?? undefined,
             priority: reminder.priority
           });
@@ -291,7 +291,7 @@ export async function processRecurringReminders() {
             console.log(`Skipping CUSTOM recurrence for "${reminder.title}"`);
             continue;
           default:
-            console.log(`Unknown recurrence type: ${reminder.recurrenceType}`);
+            console.log(`Unknown recurrence type: ${String(reminder.recurrenceType) || 'undefined'}`);
             continue;
         }
         
