@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { processRecurringReminders } from '~/server/recurringReminderWorker';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { processRecurringReminders } from '@/server/recurringReminderWorker';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('🧪 Testing reminder processing...');
     await processRecurringReminders();

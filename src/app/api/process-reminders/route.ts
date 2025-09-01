@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { processRecurringReminders } from '~/server/recurringReminderWorker';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { processRecurringReminders } from '@/server/recurringReminderWorker';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     console.log('🔄 Processing reminders triggered via API...');
     await processRecurringReminders();
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('🔄 Processing reminders triggered via GET...');
     await processRecurringReminders();
