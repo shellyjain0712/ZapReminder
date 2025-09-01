@@ -4,42 +4,42 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.9809 0.0025 228.7836);
-  --foreground: oklch(0.3211 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.3211 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.3211 0 0);
-  --primary: oklch(0.8677 0.0735 7.0855);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.8148 0.0819 225.7537);
-  --secondary-foreground: oklch(0 0 0);
-  --muted: oklch(0.8828 0.0285 98.1033);
-  --muted-foreground: oklch(0.5382 0 0);
-  --accent: oklch(0.9680 0.2110 109.7692);
-  --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.8699 0 0);
-  --input: oklch(0.8699 0 0);
-  --ring: oklch(0.8677 0.0735 7.0855);
-  --chart-1: oklch(0.8677 0.0735 7.0855);
-  --chart-2: oklch(0.8148 0.0819 225.7537);
-  --chart-3: oklch(0.9680 0.2110 109.7692);
-  --chart-4: oklch(0.8027 0.1355 349.2347);
-  --chart-5: oklch(0.7395 0.2268 142.8504);
-  --sidebar: oklch(0.9809 0.0025 228.7836);
-  --sidebar-foreground: oklch(0.3211 0 0);
-  --sidebar-primary: oklch(0.8677 0.0735 7.0855);
-  --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.9680 0.2110 109.7692);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0.8699 0 0);
-  --sidebar-ring: oklch(0.8677 0.0735 7.0855);
-  --font-sans: Poppins, sans-serif;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.1450 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.1450 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.1450 0 0);
+  --primary: oklch(0.2050 0 0);
+  --primary-foreground: oklch(0.9850 0 0);
+  --secondary: oklch(0.9700 0 0);
+  --secondary-foreground: oklch(0.2050 0 0);
+  --muted: oklch(0.9700 0 0);
+  --muted-foreground: oklch(0.5560 0 0);
+  --accent: oklch(0.9700 0 0);
+  --accent-foreground: oklch(0.2050 0 0);
+  --destructive: oklch(0.5770 0.2450 27.3250);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9220 0 0);
+  --input: oklch(0.9220 0 0);
+  --ring: oklch(0.7080 0 0);
+  --chart-1: oklch(0.8100 0.1000 252);
+  --chart-2: oklch(0.6200 0.1900 260);
+  --chart-3: oklch(0.5500 0.2200 263);
+  --chart-4: oklch(0.4900 0.2200 264);
+  --chart-5: oklch(0.4200 0.1800 266);
+  --sidebar: oklch(0.9850 0 0);
+  --sidebar-foreground: oklch(0.1450 0 0);
+  --sidebar-primary: oklch(0.2050 0 0);
+  --sidebar-primary-foreground: oklch(0.9850 0 0);
+  --sidebar-accent: oklch(0.9700 0 0);
+  --sidebar-accent-foreground: oklch(0.2050 0 0);
+  --sidebar-border: oklch(0.9220 0 0);
+  --sidebar-ring: oklch(0.7080 0 0);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: Roboto Mono, monospace;
-  --radius: 0.5rem;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0.625rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
@@ -53,42 +53,42 @@
 }
 
 .dark {
-  --background: oklch(0.2303 0.0125 264.2926);
-  --foreground: oklch(0.9219 0 0);
-  --card: oklch(0.3210 0.0078 223.6661);
-  --card-foreground: oklch(0.9219 0 0);
-  --popover: oklch(0.3210 0.0078 223.6661);
-  --popover-foreground: oklch(0.9219 0 0);
-  --primary: oklch(0.8027 0.1355 349.2347);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.7395 0.2268 142.8504);
-  --secondary-foreground: oklch(0 0 0);
-  --muted: oklch(0.3867 0 0);
-  --muted-foreground: oklch(0.7155 0 0);
-  --accent: oklch(0.8148 0.0819 225.7537);
-  --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.3867 0 0);
-  --input: oklch(0.3867 0 0);
-  --ring: oklch(0.8027 0.1355 349.2347);
-  --chart-1: oklch(0.8027 0.1355 349.2347);
-  --chart-2: oklch(0.7395 0.2268 142.8504);
-  --chart-3: oklch(0.8148 0.0819 225.7537);
-  --chart-4: oklch(0.9680 0.2110 109.7692);
-  --chart-5: oklch(0.8652 0.1768 90.3816);
-  --sidebar: oklch(0.2303 0.0125 264.2926);
-  --sidebar-foreground: oklch(0.9219 0 0);
-  --sidebar-primary: oklch(0.8027 0.1355 349.2347);
-  --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.8148 0.0819 225.7537);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0.3867 0 0);
-  --sidebar-ring: oklch(0.8027 0.1355 349.2347);
-  --font-sans: Poppins, sans-serif;
+  --background: oklch(0.1450 0 0);
+  --foreground: oklch(0.9850 0 0);
+  --card: oklch(0.2050 0 0);
+  --card-foreground: oklch(0.9850 0 0);
+  --popover: oklch(0.2690 0 0);
+  --popover-foreground: oklch(0.9850 0 0);
+  --primary: oklch(0.9220 0 0);
+  --primary-foreground: oklch(0.2050 0 0);
+  --secondary: oklch(0.2690 0 0);
+  --secondary-foreground: oklch(0.9850 0 0);
+  --muted: oklch(0.2690 0 0);
+  --muted-foreground: oklch(0.7080 0 0);
+  --accent: oklch(0.3710 0 0);
+  --accent-foreground: oklch(0.9850 0 0);
+  --destructive: oklch(0.7040 0.1910 22.2160);
+  --destructive-foreground: oklch(0.9850 0 0);
+  --border: oklch(0.2750 0 0);
+  --input: oklch(0.3250 0 0);
+  --ring: oklch(0.5560 0 0);
+  --chart-1: oklch(0.8100 0.1000 252);
+  --chart-2: oklch(0.6200 0.1900 260);
+  --chart-3: oklch(0.5500 0.2200 263);
+  --chart-4: oklch(0.4900 0.2200 264);
+  --chart-5: oklch(0.4200 0.1800 266);
+  --sidebar: oklch(0.2050 0 0);
+  --sidebar-foreground: oklch(0.9850 0 0);
+  --sidebar-primary: oklch(0.4880 0.2430 264.3760);
+  --sidebar-primary-foreground: oklch(0.9850 0 0);
+  --sidebar-accent: oklch(0.2690 0 0);
+  --sidebar-accent-foreground: oklch(0.9850 0 0);
+  --sidebar-border: oklch(0.2750 0 0);
+  --sidebar-ring: oklch(0.4390 0 0);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: Roboto Mono, monospace;
-  --radius: 0.5rem;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0.625rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
@@ -169,24 +169,24 @@ body {
 @layer components {
   .overdue-reminder {
     background: linear-gradient(135deg, 
-      rgb(254 242 242) 0%, 
-      rgb(252 231 243) 50%, 
-      rgb(255 247 237) 100%
+      rgb(254 250 250) 0%, 
+      rgb(255 245 245) 50%, 
+      rgb(254 248 248) 100%
     );
-    border: 2px solid rgb(248 113 113);
+    border: 2px solid rgb(251 146 60);
     box-shadow: 
-      0 10px 25px -3px rgba(239, 68, 68, 0.1),
-      0 4px 6px -2px rgba(239, 68, 68, 0.05),
-      0 0 0 1px rgba(239, 68, 68, 0.1);
+      0 10px 25px -3px rgba(251, 146, 60, 0.08),
+      0 4px 6px -2px rgba(251, 146, 60, 0.04),
+      0 0 0 1px rgba(251, 146, 60, 0.08);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .overdue-reminder:hover {
     transform: translateY(-2px);
     box-shadow: 
-      0 20px 35px -3px rgba(239, 68, 68, 0.15),
-      0 8px 10px -2px rgba(239, 68, 68, 0.1),
-      0 0 0 1px rgba(239, 68, 68, 0.15);
+      0 20px 35px -3px rgba(251, 146, 60, 0.12),
+      0 8px 10px -2px rgba(251, 146, 60, 0.08),
+      0 0 0 1px rgba(251, 146, 60, 0.12);
   }
 
   .overdue-notification-dot {
@@ -195,8 +195,8 @@ body {
 
   .overdue-text-glow {
     text-shadow: 
-      0 0 2px rgba(239, 68, 68, 0.3),
-      0 0 4px rgba(239, 68, 68, 0.2);
+      0 0 2px rgba(251, 146, 60, 0.2),
+      0 0 4px rgba(251, 146, 60, 0.15);
   }
 
   .overdue-badge-pulse {
@@ -204,9 +204,9 @@ body {
   }
 
   .overdue-time-indicator {
-    background: linear-gradient(135deg, rgb(239 68 68) 0%, rgb(220 38 38) 100%);
+    background: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(245 101 101) 100%);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(251, 146, 60, 0.2);
   }
 }
 
@@ -240,11 +240,11 @@ body {
 /* Enhanced gradient backgrounds for overdue states */
 .overdue-gradient-bg {
   background: linear-gradient(135deg, 
-    rgba(254, 242, 242, 0.9) 0%,
-    rgba(252, 231, 243, 0.7) 25%,
-    rgba(255, 247, 237, 0.8) 50%,
-    rgba(254, 226, 226, 0.9) 75%,
-    rgba(254, 242, 242, 0.9) 100%
+    rgba(254, 250, 250, 0.9) 0%,
+    rgba(255, 245, 245, 0.7) 25%,
+    rgba(254, 248, 248, 0.8) 50%,
+    rgba(254, 245, 245, 0.9) 75%,
+    rgba(254, 250, 250, 0.9) 100%
   );
 }
 

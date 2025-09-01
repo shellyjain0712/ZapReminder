@@ -17,12 +17,18 @@ const createReminderSchema = z.object({
   emailNotification: z.boolean().default(true),
   pushNotification: z.boolean().default(true),
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
+  notificationTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
   autoAddToCalendar: z.boolean().default(true).optional(),
   collaborators: z.array(z.object({
     email: z.string().email(),
     role: z.enum(["VIEWER", "EDITOR", "ASSIGNEE", "MANAGER"]),
     message: z.string().optional(),
   })).optional(),
+  // Recurring fields
+  isRecurring: z.boolean().default(false),
+  recurrenceType: z.enum(["DAILY", "WEEKLY", "MONTHLY", "CUSTOM"]).optional(),
+  recurrenceInterval: z.number().int().positive().optional(),
+  preDueNotifications: z.array(z.number().int().positive()).optional(),
 });
 
 // GET - Fetch all reminders for the authenticated user

@@ -45,6 +45,8 @@ export default function CalendarPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+  const [selectedDateForSummary, setSelectedDateForSummary] = useState<Date | null>(null);
 
   // Toggle reminder completion
   const toggleReminderComplete = async (id: string, completed: boolean) => {
@@ -237,7 +239,10 @@ export default function CalendarPage() {
                         ${isSelected ? 'ring-2 ring-primary' : ''}
                         ${isToday_ ? 'bg-primary/10 dark:bg-primary/20' : ''}
                       `}
-                      onClick={() => setSelectedDate(day)}
+                      onClick={() => {
+                        setSelectedDate(day);
+                        setSelectedDateForSummary(day);
+                      }}
                     >
                       {/* Date number */}
                       <div className={`
@@ -254,17 +259,23 @@ export default function CalendarPage() {
                           <div
                             key={reminder.id}
                             className={`
-                              text-xs px-1 py-0.5 rounded text-white truncate flex items-center gap-1
+                              text-xs px-1 py-0.5 rounded text-white truncate flex items-center gap-1 cursor-pointer hover:opacity-80
                               ${reminder.category ? getCategoryColor(reminder.category) : getPriorityColor(reminder.priority)}
                               ${reminder.isCompleted ? 'opacity-60' : ''}
                             `}
                             title={`${reminder.title} ${reminder.isCompleted ? '(Completed)' : ''}`}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedReminder(reminder);
+                            }}
                           >
                             <Checkbox
                               checked={reminder.isCompleted}
-                              onCheckedChange={() => toggleReminderComplete(reminder.id, reminder.isCompleted)}
+                              onCheckedChange={(checked) => {
+                                void toggleReminderComplete(reminder.id, checked as boolean);
+                              }}
                               className="h-3 w-3 shrink-0 bg-white dark:bg-gray-800 border-2 border-white dark:border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:text-white data-[state=checked]:border-primary shadow-md"
+                              onClick={(e) => e.stopPropagation()}
                             />
                             <span className={`
                               hidden md:inline text-xs flex-1 truncate
@@ -281,8 +292,17 @@ export default function CalendarPage() {
                           </div>
                         ))}
                         {dayReminders.length > 2 && (
-                          <div className="text-xs text-muted-foreground px-1">
-                            +{dayReminders.length - 2}
+                          <div 
+                            className="text-xs text-muted-foreground px-1 cursor-pointer hover:text-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Show first additional reminder in popup
+                              if (dayReminders[2]) {
+                                setSelectedReminder(dayReminders[2]);
+                              }
+                            }}
+                          >
+                            +{dayReminders.length - 2} more
                           </div>
                         )}
                       </div>
@@ -328,14 +348,19 @@ export default function CalendarPage() {
               ) : (
                 <div className="space-y-1 lg:space-y-2">
                   {selectedDateReminders.map((reminder) => (
-                    <Card key={reminder.id} className="p-2 hover:shadow-md transition-shadow border-border">
+                    <Card 
+                      key={reminder.id} 
+                      className="p-2 hover:shadow-md transition-shadow border-border cursor-pointer"
+                      onClick={() => setSelectedReminder(reminder)}
+                    >
                       <div className="flex items-center gap-2">
                         <Checkbox
                           checked={reminder.isCompleted}
                           onCheckedChange={(checked) => 
-                            toggleReminderComplete(reminder.id, checked as boolean)
+                            void toggleReminderComplete(reminder.id, checked as boolean)
                           }
                           className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shadow-sm cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 mb-1">
@@ -419,6 +444,233 @@ export default function CalendarPage() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Reminder Details Dialog */}
+      {selectedReminder && (
+        <Dialog open={!!selectedReminder} onOpenChange={() => setSelectedReminder(null)}>
+          <DialogContent className="w-[95vw] max-w-md mx-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold pr-8">
+                {selectedReminder.title}
+              </DialogTitle>
+              <DialogDescription>
+                Reminder details and information
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={selectedReminder.isCompleted ? "default" : "secondary"}>
+                  {selectedReminder.isCompleted ? "Completed" : "Pending"}
+                </Badge>
+                {selectedReminder.isSnooze && selectedReminder.snoozeUntil && (
+                  <Badge variant="outline">
+                    Snoozed until {format(selectedReminder.snoozeUntil, 'MMM d, h:mm a')}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div 
+                  className={`
+                    p-3 rounded-lg border-2
+                    ${selectedReminder.priority === 'URGENT' ? 'border-red-500 text-red-600' : ''}
+                    ${selectedReminder.priority === 'HIGH' ? 'border-orange-500 text-orange-600' : ''}
+                    ${selectedReminder.priority === 'MEDIUM' ? 'border-yellow-500 text-yellow-600' : ''}
+                    ${selectedReminder.priority === 'LOW' ? 'border-green-500 text-green-600' : ''}
+                  `}
+                >
+                  {selectedReminder.priority} Priority
+                </div>
+
+                {selectedReminder.description && (
+                  <div>
+                    <Label className="text-sm font-medium">Description</Label>
+                    <div className="mt-1 p-2 bg-muted rounded-md">
+                      <p className="text-sm">{selectedReminder.description}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <Label className="text-sm font-medium">Due Date</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {format(selectedReminder.dueDate, 'EEEE, MMMM d, yyyy')}
+                  </p>
+                </div>
+
+                {selectedReminder.reminderTime && (
+                  <div>
+                    <Label className="text-sm font-medium">Reminder Time</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {format(selectedReminder.reminderTime, 'h:mm a')}
+                    </p>
+                  </div>
+                )}
+
+                {selectedReminder.category && (
+                  <div>
+                    <Label className="text-sm font-medium">Category</Label>
+                    <Badge variant="secondary" className="mt-1">
+                      {selectedReminder.category}
+                    </Badge>
+                  </div>
+                )}
+
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <div className={`w-2 h-2 rounded-full ${selectedReminder.emailNotification ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    Email
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className={`w-2 h-2 rounded-full ${selectedReminder.pushNotification ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    Push
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t text-xs text-muted-foreground">
+                  <p>Created: {format(selectedReminder.createdAt, 'MMM d, yyyy h:mm a')}</p>
+                  <p>Updated: {format(selectedReminder.updatedAt, 'MMM d, yyyy h:mm a')}</p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Date Summary Dialog */}
+      {selectedDateForSummary && (
+        <Dialog open={!!selectedDateForSummary} onOpenChange={() => setSelectedDateForSummary(null)}>
+          <DialogContent className="w-[95vw] max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold">
+                📅 {format(selectedDateForSummary, 'EEEE, MMMM d, yyyy')}
+              </DialogTitle>
+              <DialogDescription>
+                {isToday(selectedDateForSummary) ? 'Today\'s Events' : 'All events for this date'}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-muted/50 p-3 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {getRemindersForDate(selectedDateForSummary).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Events</div>
+                </div>
+                <div className="bg-muted/50 p-3 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {getRemindersForDate(selectedDateForSummary).filter(r => r.isCompleted).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Completed</div>
+                </div>
+              </div>
+
+              {/* Priority Breakdown */}
+              {getRemindersForDate(selectedDateForSummary).length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Priority Breakdown</h4>
+                  <div className="grid grid-cols-4 gap-2 text-xs">
+                    {(['URGENT', 'HIGH', 'MEDIUM', 'LOW'] as const).map(priority => {
+                      const count = getRemindersForDate(selectedDateForSummary).filter(r => r.priority === priority).length;
+                      const colors = {
+                        URGENT: 'text-red-600 bg-red-50',
+                        HIGH: 'text-orange-600 bg-orange-50',
+                        MEDIUM: 'text-yellow-600 bg-yellow-50',
+                        LOW: 'text-green-600 bg-green-50'
+                      };
+                      return (
+                        <div key={priority} className={`p-2 rounded text-center ${colors[priority]}`}>
+                          <div className="font-bold">{count}</div>
+                          <div>{priority}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Events List */}
+              <div>
+                <h4 className="font-medium mb-3">
+                  Events ({getRemindersForDate(selectedDateForSummary).length})
+                </h4>
+                {getRemindersForDate(selectedDateForSummary).length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                    <p className="text-sm mb-3">No events scheduled for this date</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedDateForSummary(null);
+                        setShowCreateDialog(true);
+                      }}
+                    >
+                      Add Event
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {getRemindersForDate(selectedDateForSummary).map((reminder) => (
+                      <div 
+                        key={reminder.id}
+                        className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          setSelectedDateForSummary(null);
+                          setSelectedReminder(reminder);
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={reminder.isCompleted}
+                            onCheckedChange={(checked) => {
+                              void toggleReminderComplete(reminder.id, checked as boolean);
+                            }}
+                            className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white shadow-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className={`w-3 h-3 rounded-full ${reminder.category ? getCategoryColor(reminder.category) : getPriorityColor(reminder.priority)}`} />
+                              <h5 className={`font-medium text-sm truncate ${reminder.isCompleted ? 'line-through opacity-60' : ''}`}>
+                                {reminder.title}
+                              </h5>
+                              <Badge variant="outline" className="text-xs">
+                                {reminder.priority}
+                              </Badge>
+                            </div>
+                            {reminder.description && (
+                              <p className={`text-xs text-muted-foreground line-clamp-1 mb-1 ${reminder.isCompleted ? 'line-through opacity-60' : ''}`}>
+                                {reminder.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {reminder.reminderTime && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {format(reminder.reminderTime, 'h:mm a')}
+                                </div>
+                              )}
+                              {reminder.category && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {reminder.category}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

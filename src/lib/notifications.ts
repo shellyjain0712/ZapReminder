@@ -1,12 +1,16 @@
 import { sendEmail } from './email';
 
 export interface NotificationOptions {
-  type: 'reminder' | 'completion' | 'snooze' | 'deletion';
+  type: 'reminder' | 'completion' | 'snooze' | 'deletion' | 'pre-due' | 'reminder-time' | 'reminder-due-soon';
   reminderTitle: string;
   userEmail: string;
   userName?: string;
   dueDate?: Date;
   snoozeUntil?: Date;
+  reminderTime?: Date;
+  description?: string;
+  priority?: string;
+  hoursUntilDue?: number;
 }
 
 export async function sendReminderNotification(options: NotificationOptions) {
@@ -43,6 +47,33 @@ export async function sendReminderNotification(options: NotificationOptions) {
         ${dueDate ? `Due: ${dueDate.toLocaleDateString()} at ${dueDate.toLocaleTimeString()}` : ''}
         
         Don't forget to complete this task on time!
+      `;
+      break;
+
+    case 'pre-due':
+      subject = `⏰ Upcoming Reminder: ${reminderTitle}`;
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #ffc107;">⏳ Upcoming Reminder</h2>
+          <p>Hi ${userName ?? 'there'},</p>
+          <p>This is a heads-up that your reminder <strong>${reminderTitle}</strong> is due soon.</p>
+          <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <h3 style="margin: 0; color: #856404;">${reminderTitle}</h3>
+            ${dueDate ? `<p style="margin: 10px 0 0 0; color: #856404;">Due: ${dueDate.toLocaleDateString()} at ${dueDate.toLocaleTimeString()}</p>` : ''}
+          </div>
+          <p>Stay on track and plan ahead!</p>
+          <p style="color: #6c757d; font-size: 14px;">You're receiving this because you have pre-due notifications enabled for your reminders.</p>
+        </div>
+      `;
+      textContent = `
+        Upcoming Reminder
+        
+        Hi ${userName ?? 'there'},
+        
+        Your reminder "${reminderTitle}" is due soon.
+        ${dueDate ? `Due: ${dueDate.toLocaleDateString()} at ${dueDate.toLocaleTimeString()}` : ''}
+        
+        Stay on track and plan ahead!
       `;
       break;
 
@@ -102,6 +133,151 @@ export async function sendReminderNotification(options: NotificationOptions) {
       `;
       break;
 
+    case 'reminder-due-soon':
+      const timeUntil = options.hoursUntilDue ?? 1;
+      const timeText = timeUntil === 1 ? '1 hour' : `${timeUntil} hours`;
+      
+      subject = `⏰ Upcoming: ${reminderTitle} due at ${options.reminderTime?.toLocaleTimeString() ?? 'scheduled time'}`;
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 30px; border-radius: 16px; color: white;">
+            <h2 style="color: white; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+              ⏰ Reminder Coming Up!
+            </h2>
+            <p style="font-size: 18px; margin: 0 0 15px 0;">Hi ${userName ?? 'there'},</p>
+            <p style="font-size: 16px; margin: 15px 0;">Your reminder will be due in ${timeText}:</p>
+          </div>
+          
+          <div style="background-color: white; padding: 25px; border-radius: 12px; margin: -10px 20px 25px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 4px solid #4f46e5;">
+            <h3 style="margin: 0 0 15px 0; color: #333; font-size: 22px;">${reminderTitle}</h3>
+            ${options.description ? `<p style="margin: 10px 0; color: #666; font-style: italic; font-size: 16px;">${options.description}</p>` : ''}
+            
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <div style="background: #4f46e5; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                  🕐 Due Time: ${options.reminderTime?.toLocaleTimeString() ?? 'Not set'}
+                </div>
+                ${dueDate ? `
+                  <div style="background: #e5e7eb; padding: 10px 15px; border-radius: 8px; font-weight: 500;">
+                    📅 Date: ${dueDate.toLocaleDateString()}
+                  </div>
+                ` : ''}
+                <div style="background: #fef3c7; color: #92400e; padding: 10px 15px; border-radius: 8px; font-weight: 500;">
+                  ⚡ Priority: ${options.priority ?? 'MEDIUM'}
+                </div>
+              </div>
+            </div>
+            
+            <div style="background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 3px solid #3b82f6;">
+              <p style="margin: 0; color: #1e40af; font-weight: 500;">💡 Get Ready:</p>
+              <p style="margin: 5px 0 0 0; color: #1d4ed8;">Your reminder will be due at ${options.reminderTime?.toLocaleTimeString() ?? 'the scheduled time'}. Start preparing now!</p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; padding: 20px;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">You'll receive another notification when it's exactly time for your reminder.</p>
+          </div>
+        </div>
+      `;
+      textContent = `
+        ⏰ Reminder Coming Up!
+        
+        Hi ${userName ?? 'there'},
+        
+        Your reminder will be due in ${timeText}:
+        
+        ${reminderTitle}
+        ${options.description ? `\nDescription: ${options.description}` : ''}
+        
+        Due Time: ${options.reminderTime?.toLocaleTimeString() ?? 'Not set'}
+        ${dueDate ? `Date: ${dueDate.toLocaleDateString()}` : ''}
+        Priority: ${options.priority ?? 'MEDIUM'}
+        
+        Get ready! Your reminder will be due at ${options.reminderTime?.toLocaleTimeString() ?? 'the scheduled time'}.
+        You'll receive another notification when it's exactly time.
+      `;
+      break;
+
+    case 'reminder-time':
+      const priorityEmoji = {
+        'URGENT': '🚨',
+        'HIGH': '⚡',
+        'MEDIUM': '⏰',
+        'LOW': '💙'
+      };
+      
+      const priorityColor = {
+        'URGENT': '#dc3545',
+        'HIGH': '#fd7e14', 
+        'MEDIUM': '#ffc107',
+        'LOW': '#17a2b8'
+      };
+
+      const currentPriority = options.priority ?? 'MEDIUM';
+      const emoji = priorityEmoji[currentPriority as keyof typeof priorityEmoji] ?? '⏰';
+      const color = priorityColor[currentPriority as keyof typeof priorityColor] ?? '#ffc107';
+
+      subject = `${emoji} REMINDER DUE NOW: ${reminderTitle}`;
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, ${color}, ${color}dd); padding: 30px; border-radius: 16px; color: white; border: 3px solid ${color};">
+            <h2 style="color: white; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; font-size: 24px;">
+              ${emoji} REMINDER DUE NOW!
+            </h2>
+            <p style="font-size: 18px; margin: 0 0 15px 0;">Hi ${userName ?? 'there'},</p>
+            <p style="font-size: 20px; margin: 15px 0; font-weight: bold;">🔔 Your reminder is due right now!</p>
+          </div>
+          
+          <div style="background-color: white; padding: 25px; border-radius: 12px; margin: -10px 20px 25px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 6px solid ${color};">
+            <h3 style="margin: 0 0 15px 0; color: #333; font-size: 24px; font-weight: bold;">${reminderTitle}</h3>
+            ${options.description ? `<p style="margin: 10px 0; color: #666; font-style: italic; font-size: 16px;">${options.description}</p>` : ''}
+            
+            <div style="background: linear-gradient(45deg, ${color}10, ${color}05); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid ${color}30;">
+              <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                <div style="background: ${color}; color: white; padding: 12px 20px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 18px;">
+                  🕐 DUE NOW at ${options.reminderTime?.toLocaleTimeString() ?? 'this time'}!
+                </div>
+                ${dueDate ? `
+                  <div style="background: #f3f4f6; padding: 12px 20px; border-radius: 12px; font-weight: 500;">
+                    📅 ${dueDate.toLocaleDateString()}
+                  </div>
+                ` : ''}
+                <div style="background: ${color}20; color: ${color}; padding: 12px 20px; border-radius: 12px; font-size: 16px; font-weight: bold; border: 2px solid ${color};">
+                  Priority: ${currentPriority}
+                </div>
+              </div>
+            </div>
+            
+            <div style="background: #fee2e2; padding: 20px; border-radius: 12px; border-left: 4px solid #ef4444; margin: 20px 0;">
+              <p style="margin: 0; color: #dc2626; font-weight: bold; font-size: 18px;">⚡ Action Required:</p>
+              <p style="margin: 8px 0 0 0; color: #dc2626; font-size: 16px;">This is your scheduled reminder time. Take action now!</p>
+            </div>
+            
+            <div style="text-align: center; background: #f0fdf4; padding: 20px; border-radius: 12px; margin: 20px 0;">
+              <p style="margin: 0; color: #15803d; font-weight: 600; font-size: 16px;">✅ Complete this task and mark it done in your app!</p>
+            </div>
+          </div>
+        </div>
+      `;
+      textContent = `
+        ${emoji} REMINDER DUE NOW!
+        
+        Hi ${userName ?? 'there'},
+        
+        🔔 Your reminder is due right now!
+        
+        ${reminderTitle}
+        ${options.description ? `\nDescription: ${options.description}` : ''}
+        
+        DUE NOW at ${options.reminderTime?.toLocaleTimeString() ?? 'this time'}!
+        ${dueDate ? `Date: ${dueDate.toLocaleDateString()}` : ''}
+        Priority: ${currentPriority}
+        
+        ⚡ ACTION REQUIRED: This is your scheduled reminder time. Take action now!
+        ✅ Complete this task and mark it done in your app!
+      `;
+      break;
+
     case 'deletion':
       subject = `🗑️ Task Deleted: ${reminderTitle}`;
       htmlContent = `
@@ -148,16 +324,6 @@ export async function sendReminderNotification(options: NotificationOptions) {
     }
   } catch (error) {
     console.error(`❌ Error sending ${type} notification:`, error);
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    return { success: false, error: error };
   }
-}
-
-// Push notification service (placeholder for future implementation)
-export async function sendPushNotification(options: NotificationOptions) {
-  // This is a placeholder for push notification implementation
-  // You can integrate with services like Firebase Cloud Messaging, OneSignal, etc.
-  console.log(`📱 Push notification (${options.type}): ${options.reminderTitle}`);
-  
-  // For now, we'll simulate a successful push notification
-  return { success: true, message: 'Push notification sent' };
 }

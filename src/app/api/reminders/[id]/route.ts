@@ -14,8 +14,14 @@ const updateReminderSchema = z.object({
   emailNotification: z.boolean().optional(),
   pushNotification: z.boolean().optional(),
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
+  notificationTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
   isSnooze: z.boolean().optional(),
   snoozeUntil: z.string().transform((str) => str ? new Date(str) : null).optional(),
+  // Recurring fields
+  isRecurring: z.boolean().optional(),
+  recurrenceType: z.enum(["DAILY", "WEEKLY", "MONTHLY", "CUSTOM"]).optional(),
+  recurrenceInterval: z.number().int().positive().optional(),
+  preDueNotifications: z.array(z.number().int().positive()).optional(),
 });
 
 // GET - Fetch a specific reminder

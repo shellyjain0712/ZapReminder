@@ -17,8 +17,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CalendarIcon, Plus, Users, Eye, Edit, Target, Crown, UserPlus, X, Mail } from 'lucide-react';
-import { formatDate } from '@/lib/date-utils';
+import { CalendarIcon, Plus, Users, Eye, Edit, Target, Crown, UserPlus, X, Mail, Clock, Bell, AlarmClock, Repeat, Minus } from 'lucide-react';
+import { formatDate, formatDateTime } from '@/lib/date-utils';
 import { toast } from 'sonner';
 import { ReminderCard } from './ReminderCard';
 import { addReminderToCalendar } from '@/lib/calendar-integration';
@@ -38,6 +38,11 @@ interface Reminder {
   snoozeUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Recurring reminder fields
+  isRecurring?: boolean;
+  recurrenceType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM';
+  recurrenceInterval?: number;
+  preDueNotifications?: number[];
 }
 
 interface RemindersProps {
@@ -51,6 +56,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
+  const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
 
   // Fetch reminders - memoized to prevent unnecessary re-renders
   const fetchReminders = useCallback(async () => {
@@ -68,14 +74,20 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
           dueDate: string;
           priority: string;
           category?: string;
-          completed: boolean;
+          isCompleted: boolean;
           emailNotification?: boolean;
           pushNotification?: boolean;
           reminderTime?: string;
           snoozeUntil?: string;
+          isSnooze?: boolean;
           userId: string;
           createdAt: string;
           updatedAt: string;
+          // Recurring fields
+          isRecurring?: boolean;
+          recurrenceType?: string;
+          recurrenceInterval?: number;
+          preDueNotifications?: number[];
         }) => ({
           ...r,
           dueDate: new Date(r.dueDate),
@@ -319,6 +331,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
               onEdit={setEditingReminder}
               onDelete={deleteReminder}
               onSnooze={snoozeReminder}
+              onView={setSelectedReminder}
             />
           ))}
         </div>
@@ -361,6 +374,195 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Detailed View Modal */}
+      {selectedReminder && (
+        <Dialog open={!!selectedReminder} onOpenChange={() => setSelectedReminder(null)}>
+          <DialogContent className="w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                {selectedReminder.title}
+              </DialogTitle>
+              <DialogDescription>
+                Complete details of your reminder
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6 py-4">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={selectedReminder.isCompleted ? "default" : "secondary"}>
+                        {selectedReminder.isCompleted ? "Completed" : "Pending"}
+                      </Badge>
+                      {selectedReminder.isSnooze && selectedReminder.snoozeUntil && (
+                        <Badge variant="outline" className="text-orange-600">
+                          Snoozed until {formatDate(selectedReminder.snoozeUntil)}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Priority</Label>
+                    <Badge 
+                      variant="outline" 
+                      className={`
+                        ${selectedReminder.priority === 'URGENT' ? 'border-red-500 text-red-600' : ''}
+                        ${selectedReminder.priority === 'HIGH' ? 'border-orange-500 text-orange-600' : ''}
+                        ${selectedReminder.priority === 'MEDIUM' ? 'border-yellow-500 text-yellow-600' : ''}
+                        ${selectedReminder.priority === 'LOW' ? 'border-green-500 text-green-600' : ''}
+                      `}
+                    >
+                      {selectedReminder.priority}
+                    </Badge>
+                  </div>
+                </div>
+
+                {selectedReminder.description && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                    <div className="p-3 bg-muted rounded-md">
+                      <p className="text-sm">{selectedReminder.description}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Due Date</Label>
+                    <div className="flex items-center gap-2 text-sm">
+                      <CalendarIcon className="h-4 w-4" />
+                      {formatDate(selectedReminder.dueDate)}
+                    </div>
+                  </div>
+
+                  {selectedReminder.category && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">Category</Label>
+                      <Badge variant="outline">{selectedReminder.category}</Badge>
+                    </div>
+                  )}
+                </div>
+
+                {selectedReminder.reminderTime && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Reminder Time</Label>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4" />
+                      {formatDateTime(selectedReminder.reminderTime)}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Recurring Information */}
+              {selectedReminder.isRecurring && (
+                <div className="space-y-4 border-t pt-4">
+                  <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <AlarmClock className="h-4 w-4" />
+                    Recurring Settings
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Recurrence Type</Label>
+                      <Badge variant="outline" className="text-blue-600 border-blue-500">
+                        {selectedReminder.recurrenceType}
+                      </Badge>
+                    </div>
+                    
+                    {selectedReminder.recurrenceInterval && (
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Interval</Label>
+                        <Badge variant="outline">
+                          Every {selectedReminder.recurrenceInterval} {selectedReminder.recurrenceType?.toLowerCase()}(s)
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedReminder.preDueNotifications && selectedReminder.preDueNotifications.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Pre-due Notifications</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedReminder.preDueNotifications.map((days) => (
+                          <Badge key={days} variant="outline" className="text-purple-600 border-purple-500">
+                            {days} day{days !== 1 ? 's' : ''} before
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Notification Settings */}
+              <div className="space-y-4 border-t pt-4">
+                <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  Notification Preferences
+                </Label>
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span className="text-sm">Email Notifications</span>
+                    <Badge variant={selectedReminder.emailNotification ? "default" : "secondary"}>
+                      {selectedReminder.emailNotification ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">Push Notifications</span>
+                    <Badge variant={selectedReminder.pushNotification ? "default" : "secondary"}>
+                      {selectedReminder.pushNotification ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timestamps */}
+              <div className="space-y-4 border-t pt-4">
+                <Label className="text-sm font-medium text-muted-foreground">Timeline</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground">Created:</span>
+                    <p>{formatDateTime(selectedReminder.createdAt)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground">Last Updated:</span>
+                    <p>{formatDateTime(selectedReminder.updatedAt)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                <Button 
+                  onClick={() => {
+                    setEditingReminder(selectedReminder);
+                    setSelectedReminder(null);
+                  }}
+                  className="flex-1"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Reminder
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setSelectedReminder(null)}
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
@@ -387,6 +589,11 @@ export interface ReminderFormProps {
 }
 
 export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps) {
+    // Recurrence states
+    const [isRecurring, setIsRecurring] = useState(reminder?.isRecurring ?? false);
+    const [recurrenceType, setRecurrenceType] = useState<"DAILY" | "WEEKLY" | "MONTHLY" | "CUSTOM">(reminder?.recurrenceType ?? "DAILY");
+    const [recurrenceInterval, setRecurrenceInterval] = useState(reminder?.recurrenceInterval ?? 1);
+    const [preDueNotifications, setPreDueNotifications] = useState<number[]>(reminder?.preDueNotifications ?? [1]);
   const [title, setTitle] = useState(reminder?.title ?? '');
   const [description, setDescription] = useState(reminder?.description ?? '');
   const [dueDate, setDueDate] = useState<Date>(reminder?.dueDate ?? new Date());
@@ -403,6 +610,108 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
     }
     return '09:00'; // Default time
   });
+
+  // Notification time states (when to send advance email)
+  const [hasNotificationTime, setHasNotificationTime] = useState(!!reminder?.notificationTime);
+  const [notificationTimeString, setNotificationTimeString] = useState(() => {
+    if (reminder?.notificationTime) {
+      const time = new Date(reminder.notificationTime);
+      return time.toTimeString().slice(0, 5); // HH:MM format
+    }
+    return '18:00'; // Default notification time (6:00 PM)
+  });
+
+  // Update form state when reminder prop changes
+  useEffect(() => {
+    if (reminder) {
+      setIsRecurring(reminder.isRecurring ?? false);
+      setRecurrenceType(reminder.recurrenceType ?? "DAILY");
+      setRecurrenceInterval(reminder.recurrenceInterval ?? 1);
+      setPreDueNotifications(reminder.preDueNotifications ?? [1]);
+      setTitle(reminder.title ?? '');
+      setDescription(reminder.description ?? '');
+      setDueDate(reminder.dueDate ?? new Date());
+      setPriority(reminder.priority ?? 'MEDIUM');
+      setCategory(reminder.category ?? '');
+      setEmailNotification(reminder.emailNotification ?? true);
+      setPushNotification(reminder.pushNotification ?? true);
+      setHasSpecificTime(!!reminder.reminderTime);
+      if (reminder.reminderTime) {
+        const time = new Date(reminder.reminderTime);
+        setTimeString(time.toTimeString().slice(0, 5));
+      } else {
+        setTimeString('09:00');
+      }
+      
+      setHasNotificationTime(!!reminder.notificationTime);
+      if (reminder.notificationTime) {
+        const notifTime = new Date(reminder.notificationTime);
+        setNotificationTimeString(notifTime.toTimeString().slice(0, 5));
+      } else {
+        setNotificationTimeString('18:00');
+      }
+    } else {
+      // Reset form for new reminder
+      setIsRecurring(false);
+      setRecurrenceType("DAILY");
+      setRecurrenceInterval(1);
+      setPreDueNotifications([1]);
+      setTitle('');
+      setDescription('');
+      setDueDate(new Date());
+      setPriority('MEDIUM');
+      setCategory('');
+      setEmailNotification(true);
+      setPushNotification(true);
+      setHasSpecificTime(false);
+      setTimeString('09:00');
+      setHasNotificationTime(false);
+      setNotificationTimeString('18:00');
+    }
+  }, [reminder]);
+
+  // Helper functions for recurrence UI
+  const getRecurrenceDisplayText = () => {
+    if (!isRecurring) return 'Never';
+    
+    let baseText = '';
+    switch (recurrenceType) {
+      case 'DAILY':
+        baseText = recurrenceInterval === 1 ? 'Daily' : `Every ${recurrenceInterval} days`;
+        break;
+      case 'WEEKLY':
+        baseText = recurrenceInterval === 1 ? 'Weekly' : `Every ${recurrenceInterval} weeks`;
+        break;
+      case 'MONTHLY':
+        baseText = recurrenceInterval === 1 ? 'Monthly' : `Every ${recurrenceInterval} months`;
+        break;
+      case 'CUSTOM':
+        baseText = 'Custom';
+        break;
+      default:
+        baseText = 'Daily';
+    }
+    
+    return baseText;
+  };
+
+  const getIntervalUnit = () => {
+    switch (recurrenceType) {
+      case 'DAILY': return recurrenceInterval === 1 ? 'day' : 'days';
+      case 'WEEKLY': return recurrenceInterval === 1 ? 'week' : 'weeks';
+      case 'MONTHLY': return recurrenceInterval === 1 ? 'month' : 'months';
+      case 'CUSTOM': return 'interval';
+      default: return 'day';
+    }
+  };
+
+  const togglePreDueNotification = (days: number) => {
+    if (preDueNotifications.includes(days)) {
+      setPreDueNotifications(preDueNotifications.filter(d => d !== days));
+    } else {
+      setPreDueNotifications([...preDueNotifications, days]);
+    }
+  };
 
   // Collaboration states
   const [enableCollaboration, setEnableCollaboration] = useState(false);
@@ -494,6 +803,20 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       }
     }
 
+    // Combine date and notification time if set
+    let finalNotificationTime: Date | undefined = undefined;
+    if (hasNotificationTime && notificationTimeString) {
+      const timeParts = notificationTimeString.split(':');
+      if (timeParts.length === 2 && timeParts[0] && timeParts[1]) {
+        const hours = parseInt(timeParts[0], 10);
+        const minutes = parseInt(timeParts[1], 10);
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          finalNotificationTime = new Date(dueDate);
+          finalNotificationTime.setHours(hours, minutes, 0, 0);
+        }
+      }
+    }
+
     onSubmit({
       title: title.trim(),
       description: description.trim() || undefined,
@@ -503,13 +826,188 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       emailNotification,
       pushNotification,
       reminderTime: finalReminderTime?.toISOString(),
+      notificationTime: finalNotificationTime?.toISOString(),
       autoAddToCalendar,
       collaborators: enableCollaboration ? collaborators : [],
+      // Include recurring fields
+      isRecurring,
+      recurrenceType: isRecurring ? recurrenceType : undefined,
+      recurrenceInterval: isRecurring ? recurrenceInterval : undefined,
+      preDueNotifications: isRecurring ? preDueNotifications : undefined,
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 px-1">
+      {/* Recurrence Section - iOS Style */}
+      <div className="space-y-4">
+        {/* Repeat Toggle */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <Repeat className="h-4 w-4 text-purple-600" />
+              </div>
+              <Label htmlFor="is-recurring" className="text-base font-medium text-gray-900 cursor-pointer">
+                Repeat
+              </Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">
+                {isRecurring ? getRecurrenceDisplayText() : 'Never'}
+              </span>
+              <Switch
+                id="is-recurring"
+                checked={isRecurring}
+                onCheckedChange={setIsRecurring}
+                className="data-[state=checked]:bg-blue-600"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Recurrence Options - Show when enabled */}
+        {isRecurring && (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {/* Recurrence Type Selection */}
+            <div className="border-b border-gray-100 last:border-b-0">
+              <div className="p-4 hover:bg-gray-50 transition-colors">
+                <Label className="text-sm font-medium text-gray-700 mb-3 block">Repeat Frequency</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { value: 'DAILY', label: 'Daily', icon: '📅' },
+                    { value: 'WEEKLY', label: 'Weekly', icon: '📆' },
+                    { value: 'MONTHLY', label: 'Monthly', icon: '🗓️' },
+                    { value: 'CUSTOM', label: 'Custom', icon: '⚙️' }
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setRecurrenceType(option.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM')}
+                      className={`p-3 rounded-lg border text-center transition-all ${
+                        recurrenceType === option.value
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      <div className="text-lg mb-1">{option.icon}</div>
+                      <div className="text-sm font-medium">{option.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Interval Setting */}
+            <div className="border-b border-gray-100 last:border-b-0">
+              <div className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Every {recurrenceInterval} {getIntervalUnit()}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRecurrenceInterval(Math.max(1, recurrenceInterval - 1))}
+                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-8 text-center font-medium">{recurrenceInterval}</span>
+                    <button
+                      type="button"
+                      onClick={() => setRecurrenceInterval(recurrenceInterval + 1)}
+                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notification Time Setting */}
+            <div className="border-b border-gray-100 last:border-b-0">
+              <div className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Bell className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Advance Notice Time</Label>
+                      <p className="text-xs text-gray-500">When to send "reminder coming up" email</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="time"
+                        value={notificationTimeString}
+                        onChange={(e) => setNotificationTimeString(e.target.value)}
+                        className="w-32 text-center"
+                        disabled={!hasNotificationTime}
+                      />
+                    </div>
+                    <Switch
+                      checked={hasNotificationTime}
+                      onCheckedChange={setHasNotificationTime}
+                      className="data-[state=checked]:bg-purple-600"
+                    />
+                  </div>
+                </div>
+                {hasNotificationTime && (
+                  <div className="mt-2 text-xs text-green-600 text-right">
+                    Will send advance email at {notificationTimeString}
+                  </div>
+                )}
+                {!hasNotificationTime && (
+                  <div className="mt-2 text-xs text-gray-500 text-right">
+                    No advance notification
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Pre-Due Notifications */}
+            <div>
+              <div className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Bell className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Early Reminders</Label>
+                    <p className="text-xs text-gray-500">Get notified before the due date</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {[1, 2, 3, 7, 14, 30].map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => togglePreDueNotification(days)}
+                      className={`p-2 rounded-lg border text-center transition-all text-sm ${
+                        preDueNotifications.includes(days)
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      {days} day{days > 1 ? 's' : ''}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {preDueNotifications.length > 0 
+                    ? `Selected: ${preDueNotifications.sort((a, b) => a - b).join(', ')} days before`
+                    : 'No early reminders selected'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <div>
         <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
         <Input

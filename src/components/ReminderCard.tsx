@@ -26,6 +26,11 @@ interface Reminder {
   snoozeUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Recurring reminder fields
+  isRecurring?: boolean;
+  recurrenceType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM';
+  recurrenceInterval?: number;
+  preDueNotifications?: number[];
 }
 
 interface ReminderCardProps {
@@ -34,6 +39,7 @@ interface ReminderCardProps {
   onEdit: (reminder: Reminder) => void;
   onDelete: (id: string) => Promise<void>;
   onSnooze: (id: string, snoozeUntil: Date) => Promise<void>;
+  onView?: (reminder: Reminder) => void;
 }
 
 export function ReminderCard({ 
@@ -41,7 +47,8 @@ export function ReminderCard({
   onToggleComplete, 
   onEdit, 
   onDelete, 
-  onSnooze 
+  onSnooze,
+  onView 
 }: ReminderCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -130,12 +137,17 @@ export function ReminderCard({
           </div>
         )}
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3 flex-1">
+          <div 
+            className="flex items-start gap-3 flex-1 cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors"
+            onClick={() => onView?.(reminder)}
+            title="Click to view details"
+          >
             <Checkbox
               checked={reminder.isCompleted}
               onCheckedChange={(checked) => 
                 onToggleComplete(reminder.id, checked as boolean)
               }
+              onClick={(e) => e.stopPropagation()}
               className={`
                 cursor-pointer bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 
                 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white 
@@ -234,7 +246,11 @@ export function ReminderCard({
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

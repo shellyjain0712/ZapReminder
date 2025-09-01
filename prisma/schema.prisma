@@ -111,7 +111,8 @@ model Reminder {
     // Notification settings
     emailNotification Boolean @default(true)
     pushNotification  Boolean @default(true)
-    reminderTime      DateTime? // When to send reminder notification
+    reminderTime      DateTime? // When the actual reminder/task is due
+    notificationTime  DateTime? // When to send advance notification email
     isSnooze          Boolean  @default(false)
     snoozeUntil       DateTime?
     
@@ -120,10 +121,17 @@ model Reminder {
     sharedReminders   SharedReminder[]
     collaborations    Collaboration[]
 
+    // Recurring reminder features
+    isRecurring           Boolean @default(false)
+    recurrenceType        RecurrenceType?
+    recurrenceInterval    Int?
+    preDueNotifications   Int[] @default([])
+
     @@index([userId])
     @@index([dueDate])
     @@index([isCompleted])
     @@index([isShared])
+    @@index([isRecurring])
 }
 
 // User connections/friendships
@@ -163,6 +171,12 @@ model SharedReminder {
     @@index([role])
 }
 
+enum RecurrenceType {
+    DAILY
+    WEEKLY
+    MONTHLY
+    CUSTOM
+}
 // Collaboration invitations and assignments
 model Collaboration {
     id           String               @id @default(cuid())
