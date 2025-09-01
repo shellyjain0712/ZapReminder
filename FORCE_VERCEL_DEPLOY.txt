@@ -1,0 +1,4 @@
+This file exists to force Vercel to deploy from the latest commit.
+Deployment timestamp: 2025-09-01 14:15:00
+Latest commit: edc7827
+This should trigger a fresh build with all TypeScript fixes.
