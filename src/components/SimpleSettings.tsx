@@ -1210,9 +1210,9 @@ export function SimpleSettings() {
 
               <Separator />
 
-              <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800 dark:text-red-200">
+              <Alert className="border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950">
+                <AlertTriangle className="h-4 w-4 text-rose-500" />
+                <AlertDescription className="text-rose-700 dark:text-rose-200">
                   <div className="space-y-3">
                     <p className="font-medium">Danger Zone</p>
                     <p className="text-sm">These actions are permanent and cannot be undone.</p>

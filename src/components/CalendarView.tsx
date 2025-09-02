@@ -60,7 +60,7 @@ export function CalendarView({ reminders, onCreateReminder, onReminderClick, cla
   // Get priority text color
   const getPriorityTextColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'text-red-600 dark:text-red-400';
+      case 'URGENT': return 'text-rose-500 dark:text-rose-400';
       case 'HIGH': return 'text-orange-600 dark:text-orange-400';
       case 'MEDIUM': return 'text-yellow-600 dark:text-yellow-400';
       case 'LOW': return 'text-blue-600 dark:text-blue-400';
@@ -201,7 +201,7 @@ export function CalendarView({ reminders, onCreateReminder, onReminderClick, cla
                           </div>
                         </div>
                         {reminder.priority === 'URGENT' && (
-                          <AlertCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <AlertCircle className="h-4 w-4 text-rose-500 ml-2" />
                         )}
                       </div>
                     </CardContent>
@@ -277,7 +277,7 @@ function MonthlyOverview({ reminders, currentMonth }: { reminders: Reminder[]; c
         <div className="text-sm text-muted-foreground">Pending</div>
       </div>
       <div className="text-center">
-        <div className="text-2xl font-bold text-red-600">{monthlyStats.overdue}</div>
+        <div className="text-2xl font-bold text-rose-500">{monthlyStats.overdue}</div>
         <div className="text-sm text-muted-foreground">Overdue</div>
       </div>
       
@@ -286,7 +286,7 @@ function MonthlyOverview({ reminders, currentMonth }: { reminders: Reminder[]; c
         <h4 className="font-medium mb-2">Pending by Priority</h4>
         <div className="grid grid-cols-4 gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
             <span className="text-sm">Urgent: {monthlyStats.byPriority.URGENT}</span>
           </div>
           <div className="flex items-center gap-2">

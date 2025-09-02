@@ -182,7 +182,7 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 
                 <DropdownMenuItem 
-                  className="cursor-pointer text-red-600 focus:text-red-600"
+                  className="cursor-pointer text-rose-500 focus:text-rose-500 dark:text-rose-400 dark:focus:text-rose-400"
                   onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />

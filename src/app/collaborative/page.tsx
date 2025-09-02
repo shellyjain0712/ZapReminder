@@ -176,7 +176,7 @@ export default function CollaborativePage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'bg-red-500 dark:bg-red-600 text-white';
+      case 'URGENT': return 'bg-rose-400 dark:bg-rose-500 text-white';
       case 'HIGH': return 'bg-orange-500 dark:bg-orange-600 text-white';
       case 'MEDIUM': return 'bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white';
       case 'LOW': return 'bg-green-500 dark:bg-green-600 text-white';
@@ -642,7 +642,7 @@ export default function CollaborativePage() {
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                              className="hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 dark:hover:border-rose-700 transition-all"
                               onClick={() => handleInvitationResponse(invitation.id, 'decline')}
                             >
                               <AlertCircle className="h-3 w-3 mr-1" />

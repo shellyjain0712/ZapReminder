@@ -413,7 +413,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
                     <Badge 
                       variant="outline" 
                       className={`
-                        ${selectedReminder.priority === 'URGENT' ? 'border-red-500 text-red-600' : ''}
+                        ${selectedReminder.priority === 'URGENT' ? 'border-rose-400 text-rose-500' : ''}
                         ${selectedReminder.priority === 'HIGH' ? 'border-orange-500 text-orange-600' : ''}
                         ${selectedReminder.priority === 'MEDIUM' ? 'border-yellow-500 text-yellow-600' : ''}
                         ${selectedReminder.priority === 'LOW' ? 'border-green-500 text-green-600' : ''}
@@ -1306,7 +1306,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                         variant="ghost"
                         size="sm"
                         onClick={() => removeCollaborator(index)}
-                        className="ml-3 h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                        className="ml-3 h-8 w-8 p-0 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-full"
                       >
                         <X className="h-3 w-3" />
                       </Button>

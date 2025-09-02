@@ -53,7 +53,7 @@ export function ReminderCard({
 }: ReminderCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'bg-red-500';
+      case 'URGENT': return 'bg-rose-400 dark:bg-rose-500';
       case 'HIGH': return 'bg-orange-500';
       case 'MEDIUM': return 'bg-yellow-500';
       case 'LOW': return 'bg-green-500';
@@ -131,15 +131,15 @@ export function ReminderCard({
         'overdue-reminder overdue-gradient-bg' : 
         'hover:shadow-lg'
     } transition-all duration-300 ease-in-out`}>
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         {isOverdue() && !reminder.isCompleted && (
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center overdue-notification-dot">
+          <div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-rose-400 to-rose-500 rounded-full flex items-center justify-center overdue-notification-dot">
             <span className="text-white text-xs font-bold">!</span>
           </div>
         )}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-2">
           <div 
-            className="flex items-start gap-3 flex-1 cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors"
+            className="flex items-start gap-2 sm:gap-3 flex-1 cursor-pointer hover:bg-muted/50 rounded-md p-1 sm:p-2 -m-1 sm:-m-2 transition-colors"
             onClick={() => onView?.(reminder)}
             title="Click to view details"
           >
@@ -152,96 +152,102 @@ export function ReminderCard({
               className={`
                 cursor-pointer bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 
                 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white 
-                shadow-sm hover:shadow-md transition-shadow
-                ${isOverdue() ? 'border-red-400 dark:border-red-500 data-[state=checked]:bg-red-500 dark:data-[state=checked]:bg-red-600' : ''}
+                shadow-sm hover:shadow-md transition-shadow mt-1
+                ${isOverdue() ? 'border-rose-300 dark:border-rose-400 data-[state=checked]:bg-rose-400 dark:data-[state=checked]:bg-rose-500' : ''}
               `}
             />
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className={`font-medium ${reminder.isCompleted ? 'line-through' : ''} ${
-                  isOverdue() ? 'text-red-600 dark:text-red-400 font-semibold' : ''
-                }`}>
+            <div className="flex-1 space-y-2 min-w-0">
+              <div className="flex items-start gap-1 sm:gap-2 flex-wrap">
+                <h3 className={`font-medium text-sm sm:text-base leading-tight ${reminder.isCompleted ? 'line-through' : ''} ${
+                  isOverdue() ? 'text-rose-600 dark:text-rose-400 font-semibold' : ''
+                } break-words`}>
                   {reminder.title}
                 </h3>
+              </div>
+              
+              {/* Badges row - better mobile layout */}
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                 <Badge className={`${getPriorityColor(reminder.priority)} text-white text-xs shadow-sm`}>
                   {reminder.priority}
                 </Badge>
                 {reminder.category && (
                   <Badge variant="outline" className={`text-xs ${
-                    isOverdue() ? 'border-red-400 dark:border-red-500 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30' : ''
+                    isOverdue() ? 'border-rose-300 dark:border-rose-400 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/20' : ''
                   }`}>
                     {reminder.category}
                   </Badge>
                 )}
                 {isOverdue() && !reminder.isCompleted && (
-                  <Badge className="bg-red-500 dark:bg-red-600/70 text-white text-xs shadow-sm border-0 transition-colors">
+                  <Badge className="bg-rose-400 dark:bg-rose-500/80 text-white text-xs shadow-sm border-0 transition-colors">
                     <span className="flex items-center gap-1">
-                      ⚠️ OVERDUE
+                      ⚠️ <span className="hidden xs:inline">OVERDUE</span>
                     </span>
                   </Badge>
                 )}
               </div>
               
               {reminder.description && (
-                <p className={`text-sm ${
-                  isOverdue() ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
-                }`}>
+                <p className={`text-xs sm:text-sm leading-relaxed ${
+                  isOverdue() ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground'
+                } break-words`}>
                   {reminder.description}
                 </p>
               )}
               
-              <div className={`flex items-center gap-4 text-xs flex-wrap ${
-                isOverdue() ? 'text-red-600 dark:text-red-400 font-medium' : 'text-muted-foreground'
+              <div className={`flex items-center gap-2 sm:gap-4 text-xs flex-wrap ${
+                isOverdue() ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-muted-foreground'
               }`}>
                 <div className="flex items-center gap-1">
-                  <CalendarIcon className={`h-3 w-3 ${isOverdue() ? 'text-red-500' : ''}`} />
-                  <span className={isOverdue() ? 'font-semibold' : ''}>
+                  <CalendarIcon className={`h-3 w-3 ${isOverdue() ? 'text-rose-500' : ''}`} />
+                  <span className={`${isOverdue() ? 'font-semibold' : ''} whitespace-nowrap`}>
                     {formatDate(reminder.dueDate)}
                   </span>
                 </div>
                 {reminder.reminderTime && (
                   <div className="flex items-center gap-1">
-                    <Clock className={`h-3 w-3 ${isOverdue() ? 'text-red-500 dark:text-red-400' : 'text-muted-foreground'}`} />
-                    <span className={isOverdue() ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
+                    <Clock className={`h-3 w-3 ${isOverdue() ? 'text-rose-500 dark:text-rose-400' : 'text-muted-foreground'}`} />
+                    <span className={`${isOverdue() ? 'font-semibold text-rose-500 dark:text-rose-400' : ''} whitespace-nowrap`}>
                       {formatTime(reminder.reminderTime)}
                     </span>
                   </div>
                 )}
                 {reminder.emailNotification && (
                   <div className="flex items-center gap-1">
-                    <Bell className={`h-3 w-3 ${isOverdue() ? 'text-red-500' : ''}`} />
-                    Email
+                    <Bell className={`h-3 w-3 ${isOverdue() ? 'text-rose-500' : ''}`} />
+                    <span className="hidden sm:inline">Email</span>
                   </div>
                 )}
                 {reminder.isSnooze && reminder.snoozeUntil && (
                   <div className="flex items-center gap-1">
-                    <AlarmClock className={`h-3 w-3 ${isOverdue() ? 'text-red-500' : ''}`} />
-                    Until {formatDateTime(reminder.snoozeUntil)}
-                  </div>
-                )}
-                {isOverdue() && (
-                  <div className="flex items-center gap-1 bg-red-500 dark:bg-red-600/70 px-2 py-1 rounded-full text-white font-semibold text-xs">
-                    <Clock className="h-3 w-3" />
-                    <span>
-                      {(() => {
-                        const now = new Date();
-                        // Use snooze time if snoozed, otherwise use reminder time or due date
-                        const checkTime = (reminder.isSnooze && reminder.snoozeUntil) 
-                          ? reminder.snoozeUntil 
-                          : (reminder.reminderTime ?? reminder.dueDate);
-                        
-                        const diffMs = now.getTime() - checkTime.getTime();
-                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                        const diffDays = Math.floor(diffHours / 24);
-                        
-                        if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} overdue`;
-                        if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} overdue`;
-                        return 'Just overdue';
-                      })()}
-                    </span>
+                    <AlarmClock className={`h-3 w-3 ${isOverdue() ? 'text-rose-500' : ''}`} />
+                    <span className="hidden sm:inline">Until</span> <span className="whitespace-nowrap">{formatDateTime(reminder.snoozeUntil)}</span>
                   </div>
                 )}
               </div>
+              
+              {/* Overdue indicator - separate row on mobile */}
+              {isOverdue() && (
+                <div className="flex items-center gap-1 bg-rose-400 dark:bg-rose-500/80 px-2 py-1 rounded-full text-white font-semibold text-xs w-fit">
+                  <Clock className="h-3 w-3" />
+                  <span className="whitespace-nowrap">
+                    {(() => {
+                      const now = new Date();
+                      // Use snooze time if snoozed, otherwise use reminder time or due date
+                      const checkTime = (reminder.isSnooze && reminder.snoozeUntil) 
+                        ? reminder.snoozeUntil 
+                        : (reminder.reminderTime ?? reminder.dueDate);
+                      
+                      const diffMs = now.getTime() - checkTime.getTime();
+                      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                      const diffDays = Math.floor(diffHours / 24);
+                      
+                      if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} overdue`;
+                      if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} overdue`;
+                      return 'Just overdue';
+                    })()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           
@@ -251,6 +257,7 @@ export function ReminderCard({
                 variant="ghost" 
                 size="sm"
                 onClick={(e) => e.stopPropagation()}
+                className="h-8 w-8 p-0 shrink-0"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -278,7 +285,7 @@ export function ReminderCard({
               
               <DropdownMenuItem 
                 onClick={() => onDelete(reminder.id)}
-                className="text-red-600 focus:text-red-600"
+                className="text-rose-500 focus:text-rose-500 dark:text-rose-400 dark:focus:text-rose-400"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete

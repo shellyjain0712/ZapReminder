@@ -124,7 +124,7 @@ export default function CalendarPage() {
   // Priority colors
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'bg-red-500';
+      case 'URGENT': return 'bg-rose-400';
       case 'HIGH': return 'bg-orange-500';
       case 'MEDIUM': return 'bg-yellow-500';
       case 'LOW': return 'bg-blue-500';
@@ -475,7 +475,7 @@ export default function CalendarPage() {
                 <div 
                   className={`
                     p-3 rounded-lg border-2
-                    ${selectedReminder.priority === 'URGENT' ? 'border-red-500 text-red-600' : ''}
+                    ${selectedReminder.priority === 'URGENT' ? 'border-rose-400 text-rose-500' : ''}
                     ${selectedReminder.priority === 'HIGH' ? 'border-orange-500 text-orange-600' : ''}
                     ${selectedReminder.priority === 'MEDIUM' ? 'border-yellow-500 text-yellow-600' : ''}
                     ${selectedReminder.priority === 'LOW' ? 'border-green-500 text-green-600' : ''}
@@ -577,7 +577,7 @@ export default function CalendarPage() {
                     {(['URGENT', 'HIGH', 'MEDIUM', 'LOW'] as const).map(priority => {
                       const count = getRemindersForDate(selectedDateForSummary).filter(r => r.priority === priority).length;
                       const colors = {
-                        URGENT: 'text-red-600 bg-red-50',
+                        URGENT: 'text-rose-500 bg-rose-50',
                         HIGH: 'text-orange-600 bg-orange-50',
                         MEDIUM: 'text-yellow-600 bg-yellow-50',
                         LOW: 'text-green-600 bg-green-50'
