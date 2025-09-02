@@ -1,4 +1,7 @@
 This file exists to force Vercel to deploy from the latest commit.
-Deployment timestamp: 2025-09-01 14:15:00
-Latest commit: edc7827
+Deployment timestamp: 2025-09-02 14:41:00
+Latest commit: c4a981a
+CRITICAL FIX: Vercel keeps deploying from wrong commit c9e31cc
 This should trigger a fresh build with all TypeScript fixes.
+VERSION: 0.1.5
+FORCE REBUILD: TRUE

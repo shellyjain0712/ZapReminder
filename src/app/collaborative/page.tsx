@@ -28,6 +28,7 @@ interface Reminder {
   dueDate?: Date;
   isCompleted: boolean;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  notificationTime?: Date; // When to send advance notification email
   user?: {
     name?: string;
     email: string;

@@ -22,6 +22,7 @@ interface Reminder {
   emailNotification: boolean;
   pushNotification: boolean;
   reminderTime?: Date;
+  notificationTime?: Date; // When to send advance notification email
   isSnooze: boolean;
   snoozeUntil?: Date;
   createdAt: Date;
