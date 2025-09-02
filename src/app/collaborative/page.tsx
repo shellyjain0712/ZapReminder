@@ -176,21 +176,21 @@ export default function CollaborativePage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'bg-red-500 text-white';
-      case 'HIGH': return 'bg-orange-500 text-white';
-      case 'MEDIUM': return 'bg-yellow-500 text-black';
-      case 'LOW': return 'bg-green-500 text-white';
-      default: return 'bg-gray-500 text-white';
+      case 'URGENT': return 'bg-red-500 dark:bg-red-600 text-white';
+      case 'HIGH': return 'bg-orange-500 dark:bg-orange-600 text-white';
+      case 'MEDIUM': return 'bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white';
+      case 'LOW': return 'bg-green-500 dark:bg-green-600 text-white';
+      default: return 'bg-gray-500 dark:bg-gray-600 text-white';
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'MANAGER': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'EDITOR': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'ASSIGNEE': return 'bg-green-100 text-green-800 border-green-200';
-      case 'VIEWER': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'MANAGER': return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700';
+      case 'EDITOR': return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700';
+      case 'ASSIGNEE': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700';
+      case 'VIEWER': return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -278,7 +278,7 @@ export default function CollaborativePage() {
             <DialogTrigger asChild>
               <Button 
                 size="default"
-                className="w-full  sm:w-auto font-medium bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md transition-all duration-200">
+                className="w-full  sm:w-auto font-medium bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
                 <Plus className="size-4  mr-2" />
                 Create Reminder
               </Button>

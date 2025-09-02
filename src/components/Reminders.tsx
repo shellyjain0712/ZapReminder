@@ -848,18 +848,18 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       {/* Recurrence Section - iOS Style */}
       <div className="space-y-4">
         {/* Repeat Toggle */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                <Repeat className="h-4 w-4 text-purple-600" />
+              <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                <Repeat className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <Label htmlFor="is-recurring" className="text-base font-medium text-gray-900 cursor-pointer">
+              <Label htmlFor="is-recurring" className="text-base font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
                 Repeat
               </Label>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {isRecurring ? getRecurrenceDisplayText() : 'Never'}
               </span>
               <Switch
@@ -874,11 +874,11 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
 
         {/* Recurrence Options - Show when enabled */}
         {isRecurring && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             {/* Recurrence Type Selection */}
-            <div className="border-b border-gray-100 last:border-b-0">
-              <div className="p-4 hover:bg-gray-50 transition-colors">
-                <Label className="text-sm font-medium text-gray-700 mb-3 block">Repeat Frequency</Label>
+            <div className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+              <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Repeat Frequency</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { value: 'DAILY', label: 'Daily', icon: '📅' },
@@ -892,8 +892,8 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                       onClick={() => setRecurrenceType(option.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM')}
                       className={`p-3 rounded-lg border text-center transition-all ${
                         recurrenceType === option.value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                          ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       <div className="text-lg mb-1">{option.icon}</div>
@@ -905,25 +905,25 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
             </div>
 
             {/* Interval Setting */}
-            <div className="border-b border-gray-100 last:border-b-0">
-              <div className="p-4 hover:bg-gray-50 transition-colors">
+            <div className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+              <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Every {recurrenceInterval} {getIntervalUnit()}
                   </Label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setRecurrenceInterval(Math.max(1, recurrenceInterval - 1))}
-                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="w-8 text-center font-medium">{recurrenceInterval}</span>
+                    <span className="w-8 text-center font-medium dark:text-gray-200">{recurrenceInterval}</span>
                     <button
                       type="button"
                       onClick={() => setRecurrenceInterval(recurrenceInterval + 1)}
-                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                     >
                       <Plus className="h-4 w-4" />
                     </button>
@@ -933,16 +933,16 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
             </div>
 
             {/* Notification Time Setting */}
-            <div className="border-b border-gray-100 last:border-b-0">
-              <div className="p-4 hover:bg-gray-50 transition-colors">
+            <div className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+              <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Bell className="h-4 w-4 text-purple-600" />
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                      <Bell className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Advance Notice Time</Label>
-                      <p className="text-xs text-gray-500">When to send &quot;reminder coming up&quot; email</p>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Advance Notice Time</Label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">When to send &quot;reminder coming up&quot; email</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -963,12 +963,12 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                   </div>
                 </div>
                 {hasNotificationTime && (
-                  <div className="mt-2 text-xs text-green-600 text-right">
+                  <div className="mt-2 text-xs text-green-600 dark:text-green-400 text-right">
                     Will send advance email at {notificationTimeString}
                   </div>
                 )}
                 {!hasNotificationTime && (
-                  <div className="mt-2 text-xs text-gray-500 text-right">
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-right">
                     No advance notification
                   </div>
                 )}
@@ -977,14 +977,14 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
 
             {/* Pre-Due Notifications */}
             <div>
-              <div className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <Bell className="h-4 w-4 text-orange-600" />
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                    <Bell className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Early Reminders</Label>
-                    <p className="text-xs text-gray-500">Get notified before the due date</p>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Early Reminders</Label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Get notified before the due date</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
@@ -995,8 +995,8 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                       onClick={() => togglePreDueNotification(days)}
                       className={`p-2 rounded-lg border text-center transition-all text-sm ${
                         preDueNotifications.includes(days)
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                          ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {days} day{days > 1 ? 's' : ''}
