@@ -401,7 +401,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
                         {selectedReminder.isCompleted ? "Completed" : "Pending"}
                       </Badge>
                       {selectedReminder.isSnooze && selectedReminder.snoozeUntil && (
-                        <Badge variant="outline" className="text-orange-600">
+                        <Badge variant="outline" className="text-rose-600">
                           Snoozed until {formatDate(selectedReminder.snoozeUntil)}
                         </Badge>
                       )}
@@ -414,7 +414,7 @@ export function Reminders({ initialReminders = [] }: RemindersProps) {
                       variant="outline" 
                       className={`
                         ${selectedReminder.priority === 'URGENT' ? 'border-rose-400 text-rose-500' : ''}
-                        ${selectedReminder.priority === 'HIGH' ? 'border-orange-500 text-orange-600' : ''}
+                        ${selectedReminder.priority === 'HIGH' ? 'border-rose-500 text-rose-600' : ''}
                         ${selectedReminder.priority === 'MEDIUM' ? 'border-yellow-500 text-yellow-600' : ''}
                         ${selectedReminder.priority === 'LOW' ? 'border-green-500 text-green-600' : ''}
                       `}
@@ -979,8 +979,8 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
             <div>
               <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                    <Bell className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                  <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900 flex items-center justify-center">
+                    <Bell className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Early Reminders</Label>

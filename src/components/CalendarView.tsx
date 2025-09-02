@@ -61,7 +61,7 @@ export function CalendarView({ reminders, onCreateReminder, onReminderClick, cla
   const getPriorityTextColor = (priority: string) => {
     switch (priority) {
       case 'URGENT': return 'text-rose-500 dark:text-rose-400';
-      case 'HIGH': return 'text-orange-600 dark:text-orange-400';
+      case 'HIGH': return 'text-rose-600 dark:text-rose-400';
       case 'MEDIUM': return 'text-yellow-600 dark:text-yellow-400';
       case 'LOW': return 'text-blue-600 dark:text-blue-400';
       default: return 'text-gray-600 dark:text-gray-400';
@@ -273,7 +273,7 @@ function MonthlyOverview({ reminders, currentMonth }: { reminders: Reminder[]; c
         <div className="text-sm text-muted-foreground">Completed</div>
       </div>
       <div className="text-center">
-        <div className="text-2xl font-bold text-orange-600">{monthlyStats.pending}</div>
+        <div className="text-2xl font-bold text-rose-600">{monthlyStats.pending}</div>
         <div className="text-sm text-muted-foreground">Pending</div>
       </div>
       <div className="text-center">
@@ -290,7 +290,7 @@ function MonthlyOverview({ reminders, currentMonth }: { reminders: Reminder[]; c
             <span className="text-sm">Urgent: {monthlyStats.byPriority.URGENT}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
             <span className="text-sm">High: {monthlyStats.byPriority.HIGH}</span>
           </div>
           <div className="flex items-center gap-2">

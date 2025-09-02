@@ -241,7 +241,7 @@ export default function DataManagementPage() {
             </div>
             
             <div className="text-center p-4 border rounded-lg">
-              <Clock className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+              <Clock className="h-8 w-8 mx-auto mb-2 text-rose-500" />
               <p className="text-2xl font-bold">{dataStats.accountAge}</p>
               <p className="text-sm text-muted-foreground">Account Age</p>
             </div>
@@ -391,7 +391,7 @@ export default function DataManagementPage() {
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="flex items-center gap-3">
-              <Archive className="h-5 w-5 text-orange-500" />
+              <Archive className="h-5 w-5 text-rose-500" />
               <div>
                 <h4 className="font-medium">Archive Old Data</h4>
                 <p className="text-sm text-muted-foreground">
@@ -459,9 +459,9 @@ export default function DataManagementPage() {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border-red-200 dark:border-red-800">
+      <Card className="border-rose-200 dark:border-rose-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+          <CardTitle className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
             <AlertTriangle className="h-5 w-5" />
             Danger Zone
           </CardTitle>

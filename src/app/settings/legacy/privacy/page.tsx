@@ -145,7 +145,7 @@ export default function PrivacySettingsPage() {
             
             <div className="flex items-center gap-3 p-3 border rounded-lg">
               {privacy.analyticsOptIn ? (
-                <BarChart3 className="h-5 w-5 text-orange-500" />
+                <BarChart3 className="h-5 w-5 text-rose-500" />
               ) : (
                 <EyeOff className="h-5 w-5 text-green-500" />
               )}
@@ -159,7 +159,7 @@ export default function PrivacySettingsPage() {
             
             <div className="flex items-center gap-3 p-3 border rounded-lg">
               {privacy.locationTracking ? (
-                <MapPin className="h-5 w-5 text-red-500" />
+                <MapPin className="h-5 w-5 text-rose-400" />
               ) : (
                 <EyeOff className="h-5 w-5 text-green-500" />
               )}

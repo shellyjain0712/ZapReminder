@@ -1230,9 +1230,9 @@ export function SimpleSettings() {
               </Alert>
 
               {showDeleteConfirm && (
-                <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-amber-800 dark:text-amber-200">
+                <Alert className="border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950">
+                  <AlertTriangle className="h-4 w-4 text-rose-600" />
+                  <AlertDescription className="text-rose-800 dark:text-rose-200">
                     <div className="space-y-3">
                       <p className="font-medium">Are you absolutely sure?</p>
                       <p className="text-sm">This will permanently delete all your reminders, settings, and data. This action cannot be undone.</p>

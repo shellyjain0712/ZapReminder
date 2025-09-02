@@ -54,7 +54,7 @@ export function ReminderCard({
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'URGENT': return 'bg-rose-400 dark:bg-rose-500';
-      case 'HIGH': return 'bg-orange-500';
+      case 'HIGH': return 'bg-rose-500';
       case 'MEDIUM': return 'bg-yellow-500';
       case 'LOW': return 'bg-green-500';
       default: return 'bg-gray-500';

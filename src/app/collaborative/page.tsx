@@ -177,7 +177,7 @@ export default function CollaborativePage() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'URGENT': return 'bg-rose-400 dark:bg-rose-500 text-white';
-      case 'HIGH': return 'bg-orange-500 dark:bg-orange-600 text-white';
+      case 'HIGH': return 'bg-rose-500 dark:bg-rose-600 text-white';
       case 'MEDIUM': return 'bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white';
       case 'LOW': return 'bg-green-500 dark:bg-green-600 text-white';
       default: return 'bg-gray-500 dark:bg-gray-600 text-white';
