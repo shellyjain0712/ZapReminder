@@ -24,7 +24,7 @@ interface Reminder {
 
 class ReminderNotificationManager {
   private static instance: ReminderNotificationManager;
-  private checkInterval: NodeJS.Timeout | null = null;
+  private checkInterval: number | null = null;
   private lastCheckedTime: Date = new Date();
   private notifiedOverdueIds = new Set<string>();
   private notifiedReminderIds = new Set<string>();
@@ -52,7 +52,7 @@ class ReminderNotificationManager {
     // Check every minute for due reminders
     this.checkInterval = setInterval(() => {
       void this.checkReminders();
-    }, 60000); // 1 minute
+    }, 60000) as unknown as number; // 1 minute
 
     // Also check immediately
     void this.checkReminders();
