@@ -817,8 +817,32 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
         const hours = parseInt(timeParts[0], 10);
         const minutes = parseInt(timeParts[1], 10);
         if (!isNaN(hours) && !isNaN(minutes)) {
+          // For advance notifications, we need to calculate the actual notification date
+          // If the notification time is for the same day as due date, use due date
+          // If it's for advance notice, use today or calculate appropriate date
           finalNotificationTime = new Date(dueDate);
-          finalNotificationTime.setHours(hours, minutes, 0, 0);
+          
+          // If due date is today and notification time hasn't passed, use today
+          const now = new Date();
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+          
+          if (today.getTime() === dueDay.getTime()) {
+            // Due date is today - check if notification time has passed
+            const notificationTimeToday = new Date(today);
+            notificationTimeToday.setHours(hours, minutes, 0, 0);
+            
+            if (notificationTimeToday.getTime() > now.getTime()) {
+              // Notification time is later today
+              finalNotificationTime = notificationTimeToday;
+            } else {
+              // Notification time has passed today, set for due date
+              finalNotificationTime.setHours(hours, minutes, 0, 0);
+            }
+          } else {
+            // Due date is in the future - set notification time for today or day before due
+            finalNotificationTime.setHours(hours, minutes, 0, 0);
+          }
         }
       }
     }
@@ -846,7 +870,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
   return (
     <form onSubmit={handleSubmit} className="space-y-4 px-1">
       {/* Recurrence Section - iOS Style */}
-      <div className="space-y-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 p-5 rounded-xl border border-purple-200/60 dark:border-purple-800/40 shadow-sm">
+      <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-5 rounded-xl border shadow-sm">
         {/* Repeat Toggle */}
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl border border-white/50 dark:border-gray-700/50 overflow-hidden shadow-sm">
           <div className="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">

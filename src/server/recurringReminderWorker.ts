@@ -21,23 +21,23 @@ function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-// Helper to check if a reminder time matches current time (within 1 minute)
+// Helper to check if a reminder time matches current time (within 5 minutes)
 function isReminderTimeNow(reminderTime: Date, now: Date): boolean {
   const timeDiff = Math.abs(reminderTime.getTime() - now.getTime());
-  return timeDiff <= 60000; // Within 1 minute
+  return timeDiff <= 300000; // Within 5 minutes
 }
 
 // Helper to check if it's time for advance notification - handles both notification time and 1-hour-before logic
 function isAdvanceNotificationTime(targetTime: Date, now: Date, useExactTime = false): boolean {
   if (useExactTime) {
-    // For user-set notification time, check if it's within 1 minute of the target time
+    // For user-set notification time, check if it's within 5 minutes of the target time (more lenient)
     const timeDiff = Math.abs(targetTime.getTime() - now.getTime());
-    return timeDiff <= 60000; // Within 1 minute
+    return timeDiff <= 300000; // Within 5 minutes
   } else {
     // For 1-hour-before logic
     const oneHourBefore = new Date(targetTime.getTime() - (60 * 60 * 1000)); // 1 hour before
     const timeDiff = Math.abs(oneHourBefore.getTime() - now.getTime());
-    return timeDiff <= 60000; // Within 1 minute of 1 hour before
+    return timeDiff <= 300000; // Within 5 minutes of 1 hour before
   }
 }
 
@@ -186,7 +186,8 @@ export async function processRecurringReminders() {
         isCompleted: false,
         OR: [
           { isRecurring: true },
-          { reminderTime: { not: null } }
+          { reminderTime: { not: null } },
+          { notificationTime: { not: null } }
         ]
       },
       include: {
@@ -206,11 +207,11 @@ export async function processRecurringReminders() {
       const dueDate = new Date(reminder.dueDate);
       const daysToDue = daysBetween(now, dueDate);
 
-      console.log(`Processing reminder "${reminder.title}" - Days to due: ${daysToDue}`);
+      console.log(`Processing reminder "${reminder.title}" - Days to due: ${daysToDue}, Has notificationTime: ${!!reminder.notificationTime}, NotificationTime: ${reminder.notificationTime?.toISOString()}, Current time: ${now.toISOString()}`);
 
       // 1. Check for advance notification (at user-set notification time)  
       if (reminder.notificationTime && shouldSendAdvanceNotification(reminder as ReminderData, now)) {
-        console.log(`Sending advance notification for "${reminder.title}" at user-set time ${new Date(reminder.notificationTime).toISOString()}`);
+        console.log(`✅ Sending advance notification for "${reminder.title}" at user-set time ${new Date(reminder.notificationTime).toISOString()}`);
         
         try {
           await sendReminderNotification({
@@ -227,6 +228,10 @@ export async function processRecurringReminders() {
         } catch (error) {
           console.error(`❌ Failed to send advance notification for "${reminder.title}":`, error);
         }
+      } else if (reminder.notificationTime) {
+        const notificationTime = new Date(reminder.notificationTime);
+        const timeDiff = Math.abs(notificationTime.getTime() - now.getTime());
+        console.log(`⏳ Advance notification not triggered for "${reminder.title}" - Time diff: ${Math.round(timeDiff/1000/60)} minutes`);
       }
 
       // 2. Check for exact reminder time notifications  
