@@ -1144,17 +1144,17 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       </div>
 
       {/* Collaboration Section */}
-      <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200/60 shadow-sm">
+      <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-5 rounded-xl border border-blue-200/60 dark:border-blue-800/40 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Users className="h-4 w-4 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+              <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <Label htmlFor="enable-collaboration" className="text-sm font-semibold text-gray-900">
+              <Label htmlFor="enable-collaboration" className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 Team Collaboration
               </Label>
-              <p className="text-xs text-gray-600 mt-0.5">Share and assign this reminder to team members</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Share and assign this reminder to team members</p>
             </div>
           </div>
           <Switch
@@ -1169,72 +1169,72 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
           <div className="space-y-5 animate-in fade-in-0 duration-300">
             
             {/* Add Collaborator Form */}
-            <div className="space-y-4 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
-              <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                <UserPlus className="h-4 w-4 text-gray-600" />
-                <h4 className="font-medium text-gray-900">Add Team Member</h4>
+            <div className="space-y-4 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl border border-white/50 dark:border-gray-700/50 shadow-sm">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+                <UserPlus className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">Add Team Member</h4>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="collaborator-email" className="text-sm font-medium text-gray-700">Email Address</Label>
+                  <Label htmlFor="collaborator-email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</Label>
                   <Input
                     id="collaborator-email"
                     type="email"
                     placeholder="teammate@company.com"
                     value={newCollaboratorEmail}
                     onChange={(e) => setNewCollaboratorEmail(e.target.value)}
-                    className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
+                    className="border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-blue-400/20 dark:bg-gray-800 dark:text-gray-100"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="collaborator-role" className="text-sm font-medium text-gray-700">Role & Permissions</Label>
+                  <Label htmlFor="collaborator-role" className="text-sm font-medium text-gray-700 dark:text-gray-300">Role & Permissions</Label>
                   <Select value={newCollaboratorRole} onValueChange={(value) => setNewCollaboratorRole(value as 'VIEWER' | 'EDITOR' | 'ASSIGNEE' | 'MANAGER')}>
-                    <SelectTrigger className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20">
+                    <SelectTrigger className="border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-blue-400/20 dark:bg-gray-800 dark:text-gray-100">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                       <SelectItem value="VIEWER">
                         <div className="flex items-center gap-3 py-1">
-                          <div className="p-1 bg-gray-100 rounded">
-                            <Eye className="h-3 w-3 text-gray-600" />
+                          <div className="p-1 bg-gray-100 dark:bg-gray-700 rounded">
+                            <Eye className="h-3 w-3 text-gray-600 dark:text-gray-400" />
                           </div>
                           <div>
-                            <div className="font-medium">Viewer</div>
-                            <div className="text-xs text-gray-500">Can view only</div>
+                            <div className="font-medium dark:text-gray-100">Viewer</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Can view only</div>
                           </div>
                         </div>
                       </SelectItem>
                       <SelectItem value="EDITOR">
                         <div className="flex items-center gap-3 py-1">
-                          <div className="p-1 bg-blue-100 rounded">
-                            <Edit className="h-3 w-3 text-blue-600" />
+                          <div className="p-1 bg-blue-100 dark:bg-blue-900/50 rounded">
+                            <Edit className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                           </div>
                           <div>
-                            <div className="font-medium">Editor</div>
-                            <div className="text-xs text-gray-500">Can edit details</div>
+                            <div className="font-medium dark:text-gray-100">Editor</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Can edit details</div>
                           </div>
                         </div>
                       </SelectItem>
                       <SelectItem value="ASSIGNEE">
                         <div className="flex items-center gap-3 py-1">
-                          <div className="p-1 bg-green-100 rounded">
-                            <Target className="h-3 w-3 text-green-600" />
+                          <div className="p-1 bg-green-100 dark:bg-green-900/50 rounded">
+                            <Target className="h-3 w-3 text-green-600 dark:text-green-400" />
                           </div>
                           <div>
-                            <div className="font-medium">Assignee</div>
-                            <div className="text-xs text-gray-500">Responsible for completion</div>
+                            <div className="font-medium dark:text-gray-100">Assignee</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Responsible for completion</div>
                           </div>
                         </div>
                       </SelectItem>
                       <SelectItem value="MANAGER">
                         <div className="flex items-center gap-3 py-1">
-                          <div className="p-1 bg-purple-100 rounded">
-                            <Crown className="h-3 w-3 text-purple-600" />
+                          <div className="p-1 bg-purple-100 dark:bg-purple-900/50 rounded">
+                            <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                           </div>
                           <div>
-                            <div className="font-medium">Manager</div>
-                            <div className="text-xs text-gray-500">Full control & sharing</div>
+                            <div className="font-medium dark:text-gray-100">Manager</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Full control & sharing</div>
                           </div>
                         </div>
                       </SelectItem>
@@ -1244,13 +1244,13 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="collaboration-message" className="text-sm font-medium text-gray-700">Personal Message</Label>
+                <Label htmlFor="collaboration-message" className="text-sm font-medium text-gray-700 dark:text-gray-300">Personal Message</Label>
                 <Textarea
                   id="collaboration-message"
                   placeholder="Add a note about why you're sharing this reminder..."
                   value={collaborationMessage}
                   onChange={(e) => setCollaborationMessage(e.target.value)}
-                  className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 min-h-[70px]"
+                  className="border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-blue-400/20 min-h-[70px] dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
                   rows={3}
                 />
               </div>
@@ -1259,7 +1259,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                 type="button" 
                 onClick={addCollaborator}
                 size="sm"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm"
                 disabled={!newCollaboratorEmail.trim()}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -1271,21 +1271,21 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
             {collaborators.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-600" />
-                  <Label className="text-sm font-medium text-gray-900">
+                  <Users className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     Team Members ({collaborators.length})
                   </Label>
                 </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                   {collaborators.map((collaborator, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="p-2 bg-gray-100 rounded-full">
-                          <Mail className="h-3 w-3 text-gray-600" />
+                        <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
+                          <Mail className="h-3 w-3 text-gray-600 dark:text-gray-400" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-gray-900 truncate text-sm">{collaborator.email}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">{collaborator.email}</span>
                             <Badge 
                               variant="outline" 
                               className={`text-xs font-medium ${getRoleColor(collaborator.role)}`}
@@ -1295,7 +1295,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
                             </Badge>
                           </div>
                           {collaborator.message && (
-                            <p className="text-xs text-gray-600 truncate">
+                            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                               &quot;{collaborator.message}&quot;
                             </p>
                           )}
