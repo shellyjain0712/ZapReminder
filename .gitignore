@@ -44,3 +44,11 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# local session / cache files created by whatsapp/webjs during development
+.whatsapp-session/
+.wwebjs_auth/
+.wwebjs_cache/
+
+# npm lockfile (using pnpm in this repo)
+package-lock.json
