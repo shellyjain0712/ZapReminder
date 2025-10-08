@@ -1,12 +1,13 @@
 'use client'
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Reminders } from '@/components/Reminders';
 import { toast } from 'sonner';
+import { formatDisplayName } from '@/lib/user-utils';
 
 function DashboardContent() {
   const { data: session, status } = useSession();
@@ -33,6 +34,19 @@ function DashboardContent() {
     }
   }, [session, searchParams]);
 
+  const handleSignOut = async () => {
+    try {
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true 
+      });
+    } catch (error) {
+      console.error('Sign out failed:', error);
+      // Fallback redirect if signOut fails
+      router.push('/');
+    }
+  };
+
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -58,7 +72,7 @@ function DashboardContent() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                Welcome back, {session.user?.name ?? 'User'}! 👋
+                Welcome back, {formatDisplayName(session.user?.name, session.user?.email)}! 👋
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -66,7 +80,7 @@ function DashboardContent() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Account Type:</span>
                   <Badge variant="secondary">
-                    {session.user?.image ? 'Google Account' : 'Email Account'}
+                    Email Account
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
@@ -79,6 +93,14 @@ function DashboardContent() {
                     <span className="text-sm text-muted-foreground">{session.user.name}</span>
                   </div>
                 )}
+                <div className="flex items-center gap-2 pt-4">
+                  <button
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                    onClick={handleSignOut}
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -33,6 +33,7 @@ interface Reminder {
   category?: string;
   emailNotification: boolean;
   pushNotification: boolean;
+  whatsappNotification?: boolean;
   reminderTime?: Date;
   notificationTime?: Date; // When to send advance notification email
   isSnooze: boolean;
@@ -578,6 +579,7 @@ export interface ReminderFormProps {
     category?: string;
     emailNotification: boolean;
     pushNotification: boolean;
+    whatsappNotification: boolean;
     reminderTime?: string;
     notificationTime?: string;
     autoAddToCalendar?: boolean;
@@ -607,6 +609,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
   const [category, setCategory] = useState(reminder?.category ?? '');
   const [emailNotification, setEmailNotification] = useState(reminder?.emailNotification ?? true);
   const [pushNotification, setPushNotification] = useState(reminder?.pushNotification ?? true);
+  const [whatsappNotification, setWhatsappNotification] = useState(reminder?.whatsappNotification ?? false);
   const [autoAddToCalendar, setAutoAddToCalendar] = useState(true); // New state for calendar integration
   const [hasSpecificTime, setHasSpecificTime] = useState(!!reminder?.reminderTime);
   const [timeString, setTimeString] = useState(() => {
@@ -617,15 +620,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
     return '09:00'; // Default time
   });
 
-  // Notification time states (when to send advance email)
-  const [hasNotificationTime, setHasNotificationTime] = useState(!!reminder?.notificationTime);
-  const [notificationTimeString, setNotificationTimeString] = useState(() => {
-    if (reminder?.notificationTime) {
-      const time = new Date(reminder.notificationTime);
-      return time.toTimeString().slice(0, 5); // HH:MM format
-    }
-    return '18:00'; // Default notification time (6:00 PM)
-  });
+  // Removed advance notification time - will send confirmation email immediately instead
 
   // Update form state when reminder prop changes
   useEffect(() => {
@@ -649,13 +644,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
         setTimeString('09:00');
       }
       
-      setHasNotificationTime(!!reminder.notificationTime);
-      if (reminder.notificationTime) {
-        const notifTime = new Date(reminder.notificationTime);
-        setNotificationTimeString(notifTime.toTimeString().slice(0, 5));
-      } else {
-        setNotificationTimeString('18:00');
-      }
+
     } else {
       // Reset form for new reminder
       setIsRecurring(false);
@@ -671,8 +660,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       setPushNotification(true);
       setHasSpecificTime(false);
       setTimeString('09:00');
-      setHasNotificationTime(false);
-      setNotificationTimeString('18:00');
+
     }
   }, [reminder]);
 
@@ -795,6 +783,16 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       return;
     }
 
+    // Prevent selecting a due date earlier than today (date-only comparison)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const dueDateStart = new Date(dueDate);
+    dueDateStart.setHours(0, 0, 0, 0);
+    if (dueDateStart < todayStart) {
+      toast.error('Due date cannot be in the past');
+      return;
+    }
+
     // Combine date and time if specific time is set
     let finalReminderTime: Date | undefined = undefined;
     if (hasSpecificTime && timeString) {
@@ -809,43 +807,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       }
     }
 
-    // Combine date and notification time if set
-    let finalNotificationTime: Date | undefined = undefined;
-    if (hasNotificationTime && notificationTimeString) {
-      const timeParts = notificationTimeString.split(':');
-      if (timeParts.length === 2 && timeParts[0] && timeParts[1]) {
-        const hours = parseInt(timeParts[0], 10);
-        const minutes = parseInt(timeParts[1], 10);
-        if (!isNaN(hours) && !isNaN(minutes)) {
-          // For advance notifications, we need to calculate the actual notification date
-          // If the notification time is for the same day as due date, use due date
-          // If it's for advance notice, use today or calculate appropriate date
-          finalNotificationTime = new Date(dueDate);
-          
-          // If due date is today and notification time hasn't passed, use today
-          const now = new Date();
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-          
-          if (today.getTime() === dueDay.getTime()) {
-            // Due date is today - check if notification time has passed
-            const notificationTimeToday = new Date(today);
-            notificationTimeToday.setHours(hours, minutes, 0, 0);
-            
-            if (notificationTimeToday.getTime() > now.getTime()) {
-              // Notification time is later today
-              finalNotificationTime = notificationTimeToday;
-            } else {
-              // Notification time has passed today, set for due date
-              finalNotificationTime.setHours(hours, minutes, 0, 0);
-            }
-          } else {
-            // Due date is in the future - set notification time for today or day before due
-            finalNotificationTime.setHours(hours, minutes, 0, 0);
-          }
-        }
-      }
-    }
+    // No advance notification time - confirmation email will be sent immediately
 
     onSubmit({
       title: title.trim(),
@@ -855,8 +817,8 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
       category: category.trim() || undefined,
       emailNotification,
       pushNotification,
+      whatsappNotification,
       reminderTime: finalReminderTime?.toISOString(),
-      notificationTime: finalNotificationTime?.toISOString(),
       autoAddToCalendar,
       collaborators: enableCollaboration ? collaborators : [],
       // Include recurring fields
@@ -956,48 +918,7 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
               </div>
             </div>
 
-            {/* Notification Time Setting */}
-            <div className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-              <div className="p-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                      <Bell className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Advance Notice Time</Label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">When to send &quot;reminder coming up&quot; email</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="time"
-                        value={notificationTimeString}
-                        onChange={(e) => setNotificationTimeString(e.target.value)}
-                        className="w-32 text-center"
-                        disabled={!hasNotificationTime}
-                      />
-                    </div>
-                    <Switch
-                      checked={hasNotificationTime}
-                      onCheckedChange={setHasNotificationTime}
-                      className="data-[state=checked]:bg-purple-600"
-                    />
-                  </div>
-                </div>
-                {hasNotificationTime && (
-                  <div className="mt-2 text-xs text-green-600 dark:text-green-400 text-right">
-                    Will send advance email at {notificationTimeString}
-                  </div>
-                )}
-                {!hasNotificationTime && (
-                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-right">
-                    No advance notification
-                  </div>
-                )}
-              </div>
-            </div>
+
 
             {/* Pre-Due Notifications */}
             <div>
@@ -1080,6 +1001,9 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
               mode="single"
               selected={dueDate}
               onSelect={(date) => date && setDueDate(date)}
+              // Disallow selecting dates before today; allow today
+              disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+              fromDate={new Date(new Date().setHours(0, 0, 0, 0))}
               initialFocus
             />
           </PopoverContent>
@@ -1155,6 +1079,14 @@ export function ReminderForm({ reminder, onSubmit, onCancel }: ReminderFormProps
             id="push-notification"
             checked={pushNotification}
             onCheckedChange={setPushNotification}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="whatsapp-notification" className="text-sm font-medium">📱 WhatsApp Notifications</Label>
+          <Switch
+            id="whatsapp-notification"
+            checked={whatsappNotification}
+            onCheckedChange={setWhatsappNotification}
           />
         </div>
         <div className="flex items-center justify-between">

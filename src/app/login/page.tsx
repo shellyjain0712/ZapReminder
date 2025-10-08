@@ -1,5 +1,5 @@
 'use client'
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import { FcGoogle } from "react-icons/fc";
@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
 
 function LoginForm() {
   const { data: session, status } = useSession();
@@ -18,8 +19,16 @@ function LoginForm() {
   // Show success message from signup
   useEffect(() => {
     const message = searchParams.get('message');
+    const error = searchParams.get('error');
+    const code = searchParams.get('code');
+
     if (message) {
       toast.success(message);
+    }
+
+    if (error) {
+      console.error('OAuth Error:', { error, code });
+      toast.error(`Authentication failed: ${error}`);
     }
   }, [searchParams]);
 
@@ -40,34 +49,20 @@ function LoginForm() {
     setLoading(true);
     
     try {
-      const res = await signIn('credentials', {
+      const result = await signIn('credentials', {
         email: form.email,
         password: form.password,
         redirect: false,
       });
 
-      console.log('SignIn result:', res);
+      if (result?.error) {
+        toast.error("Invalid email or password");
+        return;
+      }
 
-      if (res?.error) {
-        console.error('Login error:', res.error);
-        toast.error(`Login failed: ${res.error}`);
-      } else if (res?.ok) {
+      if (result?.ok) {
         toast.success("Login successful! Redirecting...");
-        
-        // Wait for session to be established
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Use router push first, then fallback to window.location
-        router.push('/dashboard?welcome=true');
-        
-        // Fallback redirect
-        setTimeout(() => {
-          if (window.location.pathname !== '/dashboard') {
-            window.location.href = '/dashboard?welcome=true';
-          }
-        }, 1500);
-      } else {
-        toast.error("Login failed - unknown error");
+        router.push('/dashboard');
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -79,31 +74,36 @@ function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     try {
-      // For Google OAuth, let NextAuth handle the redirect automatically
-      await signIn('google', { 
-        callbackUrl: '/dashboard?welcome=true',
+      // Use NextAuth's signIn function for Google OAuth
+      const result = await signIn('google', {
+        callbackUrl: '/dashboard',
+        redirect: false,
       });
-      
-      // This will trigger the automatic redirect to Google OAuth
-      // The redirect callback in auth config will handle the return redirect
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      if (result?.url) {
+        // Redirect to Google OAuth
+        window.location.href = result.url;
+      } else {
+        toast.success("Redirecting to dashboard...");
+        router.push('/dashboard');
+      }
     } catch (err) {
       console.error("Google sign-in error:", err);
       toast.error("Google sign-in failed. Please try again.");
     }
   };
 
-  // Show loading spinner while checking authentication
-  if (status === 'loading') {
+  // Show loading spinner while checking authentication or redirecting
+  if (status === 'loading' || session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
-  }
-
-  // Don't render login form if already authenticated
-  if (session) {
-    return null;
   }
 
   return (

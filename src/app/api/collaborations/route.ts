@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/server/auth';
+import { getServerAuth } from "@/lib/auth-server";
 import { db } from '@/server/db';
 
 // GET /api/collaborations - Get pending collaboration invitations
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -92,7 +92,7 @@ export async function GET() {
 // POST /api/collaborations - Accept/decline collaboration invitations
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

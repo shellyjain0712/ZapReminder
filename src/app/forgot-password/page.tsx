@@ -50,10 +50,17 @@ export default function ForgotPassword() {
         setSent(true);
         if (data.resetUrl) {
           setResetUrl(data.resetUrl);
+          // Automatically redirect to reset password page in development mode
+          if (data.devMode) {
+            toast.success("Redirecting to password reset...");
+            setTimeout(() => {
+              window.location.href = data.resetUrl!;
+            }, 2000);
+          }
         }
         
         if (data.devMode) {
-          toast.success("Reset link generated! Check below for the reset link.");
+          toast.success("Reset link generated! Redirecting to reset page...");
         } else {
           toast.success("Reset link sent! Check your email for instructions.");
         }

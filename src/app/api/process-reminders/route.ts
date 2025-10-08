@@ -2,10 +2,21 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processRecurringReminders } from '@/server/recurringReminderWorker';
 
+export const maxDuration = 30; // Set timeout to 30 seconds
+
 export async function POST(_request: NextRequest) {
   try {
     console.log('🔄 Processing reminders triggered via API...');
-    await processRecurringReminders();
+    
+    // Set a timeout for the operation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 25000); // 25 second timeout
+    });
+    
+    const processPromise = processRecurringReminders();
+    
+    // Race between processing and timeout
+    await Promise.race([processPromise, timeoutPromise]);
     
     return NextResponse.json({ 
       success: true, 
@@ -29,7 +40,16 @@ export async function POST(_request: NextRequest) {
 export async function GET(_request: NextRequest) {
   try {
     console.log('🔄 Processing reminders triggered via GET...');
-    await processRecurringReminders();
+    
+    // Set a timeout for the operation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 25000); // 25 second timeout
+    });
+    
+    const processPromise = processRecurringReminders();
+    
+    // Race between processing and timeout
+    await Promise.race([processPromise, timeoutPromise]);
     
     return NextResponse.json({ 
       success: true, 

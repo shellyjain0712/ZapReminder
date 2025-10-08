@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unnecessary-type-assertion */
-import { NextResponse } from "next/server";
-import { auth } from "@/server/auth";
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerAuth } from "@/lib/auth-server";
 import { db } from "@/server/db";
 import { z } from "zod";
 
@@ -26,12 +26,12 @@ const updateReminderSchema = z.object({
 
 // GET - Fetch a specific reminder
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -44,11 +44,54 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if user owns the reminder OR has access through collaboration
     const reminder = await db.reminder.findFirst({
       where: {
         id: id,
-        userId: user.id,
+        OR: [
+          // User owns the reminder
+          { userId: user.id },
+          // User has access through shared reminder
+          {
+            sharedReminders: {
+              some: {
+                userId: user.id
+              }
+            }
+          }
+        ]
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        },
+        sharedReminders: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          }
+        },
+        collaborations: {
+          include: {
+            receiver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!reminder) {
@@ -67,12 +110,12 @@ export async function GET(
 
 // PUT - Update a specific reminder
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -85,24 +128,57 @@ export async function PUT(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if user owns the reminder OR has editing permissions through collaboration
     const existingReminder = await db.reminder.findFirst({
       where: {
         id,
-        userId: user.id,
+        OR: [
+          // User owns the reminder
+          { userId: user.id },
+          // User has editing permissions through shared reminder
+          {
+            sharedReminders: {
+              some: {
+                userId: user.id,
+                OR: [
+                  { role: "EDITOR" },
+                  { role: "MANAGER" },
+                  { canEdit: true }
+                ]
+              }
+            }
+          }
+        ]
       },
+      include: {
+        user: true,
+        sharedReminders: {
+          where: { userId: user.id }
+        }
+      }
     });
 
     if (!existingReminder) {
-      return NextResponse.json({ error: "Reminder not found" }, { status: 404 });
+      return NextResponse.json({ 
+        error: "Reminder not found or you don't have permission to edit it" 
+      }, { status: 404 });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = await request.json();
     const validatedData = updateReminderSchema.parse(body);
 
+    // Recalculate notification time if due date or reminder time changes
+    const updateData = { ...validatedData };
+    if (validatedData.dueDate || validatedData.reminderTime) {
+      const newDueTime = validatedData.reminderTime ?? validatedData.dueDate ?? existingReminder.reminderTime ?? existingReminder.dueDate;
+      const newNotificationTime = new Date(newDueTime.getTime() - 30 * 60 * 1000); // 30 minutes before
+      updateData.notificationTime = newNotificationTime;
+    }
+
     const updatedReminder = await db.reminder.update({
       where: { id },
-      data: validatedData,
+      data: updateData,
     });
 
     // Send notification if task is completed
@@ -131,12 +207,12 @@ export async function PUT(
 
 // DELETE - Delete a specific reminder
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -149,15 +225,36 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if user owns the reminder OR has manager permissions through collaboration
     const existingReminder = await db.reminder.findFirst({
       where: {
         id,
-        userId: user.id,
+        OR: [
+          // User owns the reminder
+          { userId: user.id },
+          // User has manager permissions through shared reminder
+          {
+            sharedReminders: {
+              some: {
+                userId: user.id,
+                role: "MANAGER"
+              }
+            }
+          }
+        ]
       },
+      include: {
+        user: true,
+        sharedReminders: {
+          where: { userId: user.id }
+        }
+      }
     });
 
     if (!existingReminder) {
-      return NextResponse.json({ error: "Reminder not found" }, { status: 404 });
+      return NextResponse.json({ 
+        error: "Reminder not found or you don't have permission to delete it" 
+      }, { status: 404 });
     }
 
     // Check if this reminder has collaborators

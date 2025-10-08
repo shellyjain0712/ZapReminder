@@ -61,6 +61,8 @@ model User {
     emailVerified DateTime?
     image         String?
     password      String?   // For credentials authentication
+    phoneNumber   String?   // WhatsApp phone number
+    whatsappEnabled Boolean @default(false) // WhatsApp notification preference
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
@@ -109,12 +111,16 @@ model Reminder {
     updatedAt   DateTime @updatedAt
 
     // Notification settings
-    emailNotification Boolean @default(true)
-    pushNotification  Boolean @default(true)
-    reminderTime      DateTime? // When the actual reminder/task is due
-    notificationTime  DateTime? // When to send advance notification email
-    isSnooze          Boolean  @default(false)
-    snoozeUntil       DateTime?
+    emailNotification    Boolean @default(true)
+    pushNotification     Boolean @default(true)
+    whatsappNotification Boolean @default(false)
+    whatsappPhoneNumber  String? // Custom WhatsApp number for this reminder (overrides user's default)
+    reminderTime         DateTime? // When the actual reminder/task is due
+    notificationTime     DateTime? // When to send advance notification email
+    reminderInterval     Int?      @default(60) // Reminder interval in minutes (default: 60 min = 1 hour)
+    lastNotificationSent DateTime? // Track when last notification was sent to prevent duplicates
+    isSnooze             Boolean  @default(false)
+    snoozeUntil          DateTime?
     
     // Collaborative features
     isShared          Boolean @default(false)

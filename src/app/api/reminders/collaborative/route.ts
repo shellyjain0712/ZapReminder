@@ -8,13 +8,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion */
 import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/server/auth';
+import { getServerAuth } from "@/lib/auth-server";
 import { db } from '@/server/db';
 
 // GET /api/reminders/collaborative - Get all collaborative reminders for the user
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -124,7 +124,7 @@ export async function GET() {
 // POST /api/reminders/collaborative - Share a reminder or create a collaborative reminder
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

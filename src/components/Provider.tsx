@@ -1,10 +1,10 @@
 // src/components/Providers.tsx
 'use client';
 
-import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationProvider } from "./NotificationProvider";
+import { SessionProvider } from "next-auth/react";
 import React from "react";
 
 export default function Providers({ children }: { children: React.ReactNode }) {

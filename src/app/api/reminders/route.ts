@@ -3,10 +3,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { NextResponse } from "next/server";
-import { auth } from "@/server/auth";
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerAuth } from "@/lib/auth-server";
 import { db } from "@/server/db";
 import { z } from "zod";
+import { sendReminderConfirmationEmail } from "@/lib/reminder-confirmation";
 
 const createReminderSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -16,8 +17,9 @@ const createReminderSchema = z.object({
   category: z.string().optional(),
   emailNotification: z.boolean().default(true),
   pushNotification: z.boolean().default(true),
+  whatsappNotification: z.boolean().default(false),
+  whatsappPhoneNumber: z.string().optional(), // Custom WhatsApp number for this reminder
   reminderTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
-  notificationTime: z.string().transform((str) => str ? new Date(str) : null).optional(),
   autoAddToCalendar: z.boolean().default(true).optional(),
   collaborators: z.array(z.object({
     email: z.string().email(),
@@ -32,9 +34,13 @@ const createReminderSchema = z.object({
 });
 
 // GET - Fetch all reminders for the authenticated user
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    // Properly handle async request in Next.js 15
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
+    
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -47,7 +53,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { searchParams } = new URL(request.url);
     const completed = searchParams.get("completed");
     const priority = searchParams.get("priority");
     const category = searchParams.get("category");
@@ -68,6 +73,30 @@ export async function GET(request: Request) {
 
     const reminders = await db.reminder.findMany({
       where: whereClause,
+      include: {
+        sharedReminders: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          }
+        },
+        collaborations: {
+          include: {
+            receiver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          }
+        }
+      },
       orderBy: [
         { isCompleted: "asc" },
         { priority: "desc" },
@@ -86,9 +115,9 @@ export async function GET(request: Request) {
 }
 
 // POST - Create a new reminder
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerAuth(request);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -104,12 +133,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createReminderSchema.parse(body);
 
-    // Extract calendar preference and collaborators from data to be saved
+    // Extract calendar preference, collaborators, and problematic fields from data to be saved
     const { autoAddToCalendar, collaborators, ...reminderData } = validatedData;
+
+    // Calculate notification time: 30 minutes before due time (for WhatsApp/Email notifications)
+    const dueTime = reminderData.reminderTime ?? reminderData.dueDate;
+    const notificationTime = new Date(dueTime.getTime() - 30 * 60 * 1000); // 30 minutes before
 
     const reminder = await db.reminder.create({
       data: {
         ...reminderData,
+        notificationTime: notificationTime, // 30 minutes before due time for advance notifications
+        reminderInterval: null,
         userId: user.id,
       },
     });
@@ -145,6 +180,27 @@ export async function POST(request: Request) {
     // If calendar integration is enabled, add calendar-related metadata
     if (autoAddToCalendar) {
       console.log(`📅 Calendar integration enabled for reminder: ${reminder.title}`);
+    }
+
+    // Send instant confirmation email
+    try {
+      if (reminder.emailNotification) {
+        console.log(`📧 Sending confirmation email for reminder: ${reminder.title}`);
+        const confirmationResult = await sendReminderConfirmationEmail(
+          reminder,
+          session.user.email,
+          session.user.name
+        );
+        
+        if (confirmationResult.success) {
+          console.log(`✅ Confirmation email sent successfully`);
+        } else {
+          console.error(`❌ Failed to send confirmation email:`, confirmationResult.error);
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+      // Don't fail the reminder creation if email fails
     }
 
     return NextResponse.json({

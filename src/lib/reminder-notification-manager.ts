@@ -67,8 +67,22 @@ class ReminderNotificationManager {
 
   private async fetchReminders(): Promise<Reminder[]> {
     try {
-      const response = await fetch('/api/reminders');
+      // Check if we're in the browser and the server is available
+      if (typeof window === 'undefined') {
+        return [];
+      }
+
+      const response = await fetch('/api/reminders', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Add a timeout to prevent hanging
+        signal: AbortSignal.timeout(10000), // 10 seconds timeout
+      });
+      
       if (!response.ok) {
+        console.warn('Failed to fetch reminders:', response.status, response.statusText);
         return [];
       }
       
@@ -85,7 +99,17 @@ class ReminderNotificationManager {
         isCompleted: (reminder.completed as boolean) ?? false,
       })) as Reminder[];
     } catch (error) {
-      console.error('Failed to fetch reminders for notifications:', error);
+      // Don't log errors for network failures during development
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.warn('Reminder fetch timed out');
+        } else if (error.message.includes('fetch')) {
+          // Silent fail for fetch errors when server is not available
+          return [];
+        } else {
+          console.error('Failed to fetch reminders for notifications:', error);
+        }
+      }
       return [];
     }
   }

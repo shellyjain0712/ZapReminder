@@ -1,7 +1,7 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { useSession, signOut } from "next-auth/react";
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,28 +16,32 @@ import {
 import { 
   Home, 
   Settings, 
-  User, 
   LogOut,
-  Shield,
-  Bell,
-  Palette,
   Calendar,
-  Users
+  Users,
+  MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { formatDisplayName, getUserInitials } from '@/lib/user-utils';
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     try {
-      await signOut({ callbackUrl: '/login' });
-      toast.success("Signed out successfully");
+      toast.success("Signing out...");
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true 
+      });
     } catch (err) {
       console.error("Sign out error:", err);
       toast.error("Error signing out");
+      // Fallback redirect if signOut fails
+      router.push('/');
     }
   };
 
@@ -59,6 +63,12 @@ export function Navbar() {
       href: '/collaborative',
       icon: Users,
       current: pathname === '/collaborative'
+    },
+    {
+      name: 'WhatsApp',
+      href: '/whatsapp',
+      icon: MessageCircle,
+      current: pathname === '/whatsapp'
     },
     {
       name: 'Settings',
@@ -114,18 +124,18 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={session.user?.image ?? undefined} />
+                    <AvatarImage src={undefined} />
                     <AvatarFallback>
-                      {session.user?.name?.charAt(0) ?? session.user?.email?.charAt(0) ?? 'U'}
+                      {getUserInitials(session.user?.name, session.user?.email)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-48" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none truncate">
-                      {session.user?.name ?? 'User'}
+                      {formatDisplayName(session.user?.name, session.user?.email)}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground truncate">
                       {session.user?.email}
@@ -134,53 +144,7 @@ export function Navbar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                {/* Mobile Navigation Items */}
-                <div className="md:hidden">
-                  {navigation.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link href={item.href} className="cursor-pointer">
-                          <Icon className="mr-2 h-4 w-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator className="md:hidden" />
-                </div>
-                
-                {/* Settings shortcuts */}
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/profile" className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/security" className="cursor-pointer">
-                    <Shield className="mr-2 h-4 w-4" />
-                    <span>Security</span>
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/notifications" className="cursor-pointer">
-                    <Bell className="mr-2 h-4 w-4" />
-                    <span>Notifications</span>
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/appearance" className="cursor-pointer">
-                    <Palette className="mr-2 h-4 w-4" />
-                    <span>Appearance</span>
-                  </Link>
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
+                {/* Only Logout Option */}
                 <DropdownMenuItem 
                   className="cursor-pointer text-rose-500 focus:text-rose-500 dark:text-rose-400 dark:focus:text-rose-400"
                   onClick={handleSignOut}

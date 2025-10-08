@@ -22,6 +22,10 @@ export const env = createEnv({
     EMAIL_SERVER_HOST: z.string(),
     EMAIL_SERVER_PORT: z.string(),
     EMAIL_FROM: z.string().email(),
+
+    TWILIO_ACCOUNT_SID: z.string().optional(),
+    TWILIO_AUTH_TOKEN: z.string().optional(),
+    TWILIO_WHATSAPP_FROM: z.string().optional(),
   },
 
   /**
@@ -49,6 +53,10 @@ export const env = createEnv({
     EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
     EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
     EMAIL_FROM: process.env.EMAIL_FROM,
+
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+    TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM,
   },
 
   /**
